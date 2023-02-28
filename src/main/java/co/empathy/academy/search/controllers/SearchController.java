@@ -1,12 +1,19 @@
 package co.empathy.academy.search.controllers;
 
+import co.empathy.academy.search.services.ElasticService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class SearchController {
-    @GetMapping("/search")
-    public String getId(@RequestParam(defaultValue="LAIS") String id){
+    @Autowired
+    private ElasticService elastic;
 
-        return id;
+    @GetMapping("/search")
+    public String search(@RequestParam String query){
+
+        //return "Query: " + query + " ClusterName: " + elastic.getState();
+        elastic.getState();
+        return "";
     }
 }

@@ -28,6 +28,7 @@ public class ElasticService {
     }
 
     public void getState(){
+        this.createClient();
         try {
             System.out.println(client.cluster().state());
         } catch (IOException e) {
