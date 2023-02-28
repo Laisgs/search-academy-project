@@ -12,8 +12,6 @@ public class SearchController {
     @GetMapping("/search")
     public String search(@RequestParam String query){
 
-        //return "Query: " + query + " ClusterName: " + elastic.getState();
-        elastic.getState();
-        return "";
+        return "Query: " + query + " ClusterName: " + elastic.getState().toJson().asJsonObject().getString("cluster_name");
     }
 }
