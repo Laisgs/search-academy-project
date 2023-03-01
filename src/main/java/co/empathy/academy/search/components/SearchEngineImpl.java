@@ -1,4 +1,4 @@
-package co.empathy.academy.search.services;
+package co.empathy.academy.search.components;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.JsonData;
@@ -7,15 +7,15 @@ import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-@Service
-public class ElasticService {
+@Component
+public class SearchEngineImpl implements SearchEngine{
     private ElasticsearchClient client;
 
-    public void createClient(){
+    private void createClient(){
         // Create the low-level client
         RestClient restClient = RestClient.builder(
                 new HttpHost("localhost", 9200)).build();
