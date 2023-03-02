@@ -13,6 +13,6 @@ public class SearchServiceImpl implements SearchService{
     private SearchEngine searchEngine;
     @Override
     public String search(String query) {
-        return "Query: " + query + " ClusterName: " + searchEngine.getState().toJson().asJsonObject().getString("cluster_name");
+        return "Query: " + query + " ClusterName: " + searchEngine.getClusterName();
     }
 }

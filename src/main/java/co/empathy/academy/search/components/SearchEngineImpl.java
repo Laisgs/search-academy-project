@@ -28,10 +28,10 @@ public class SearchEngineImpl implements SearchEngine{
         client = new ElasticsearchClient(transport);
     }
 
-    public JsonData getState(){
+    public String getClusterName(){
         createClient();
         try {
-            return client.cluster().state().valueBody();
+            return client.cluster().state().valueBody().toJson().asJsonObject().getString("cluster_name");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
