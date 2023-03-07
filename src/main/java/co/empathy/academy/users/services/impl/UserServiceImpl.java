@@ -29,4 +29,22 @@ public class UserServiceImpl implements UserService {
         }
         return false;
     }
+
+    @Override
+    public boolean edit(User user) {
+        if(usuarios.containsKey(user.getId())){
+            usuarios.replace(user.getId(), user);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean delete(int id) {
+        if(usuarios.containsKey(id)){
+            usuarios.remove(id);
+            return true;
+        }
+        return false;
+    }
 }

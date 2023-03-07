@@ -37,4 +37,20 @@ public class UserController {
         }
         return new ResponseEntity<>("User " + user.getName() + " already exist", HttpStatus.CONFLICT);
     }
+
+    @RequestMapping(value = "/user/edit", method = RequestMethod.PUT)
+    public ResponseEntity<String> editUser(@ModelAttribute User user){
+        if(userService.edit(user)){
+            return new ResponseEntity<>("User " + user.getName() + " edited", HttpStatus.OK);
+        }
+        return new ResponseEntity<>("User " + user.getName() + " do not exist", HttpStatus.NOT_FOUND);
+    }
+
+    @RequestMapping(value = "/user/{id}/delete", method = RequestMethod.DELETE)
+    public ResponseEntity<String> deleteUser(@PathVariable int id){
+        if(userService.delete(id)){
+            return new ResponseEntity<>("User with id " + id + " deleted", HttpStatus.OK);
+        }
+        return new ResponseEntity<>("User with id " + id + " do not exist", HttpStatus.NOT_FOUND);
+    }
 }
