@@ -1,6 +1,6 @@
-package co.empathy.academy.users.services;
+package co.empathy.academy.search.users.services;
 
-import co.empathy.academy.users.entities.User;
+import co.empathy.academy.search.users.entities.User;
 
 import java.util.List;
 

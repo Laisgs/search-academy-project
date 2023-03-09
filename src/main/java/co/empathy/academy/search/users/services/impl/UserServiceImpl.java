@@ -1,14 +1,17 @@
-package co.empathy.academy.users.services.impl;
+package co.empathy.academy.search.users.services.impl;
 
-import co.empathy.academy.users.entities.User;
-import co.empathy.academy.users.services.UserService;
+import co.empathy.academy.search.users.entities.User;
+import co.empathy.academy.search.users.services.UserService;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Service
 public class UserServiceImpl implements UserService {
     private ConcurrentHashMap<Integer, User> usuarios = new ConcurrentHashMap<>();
+    private int i;
     @Override
     public User getUser(int id) {
         if(usuarios.containsKey(id)){
@@ -18,6 +21,8 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public List<User> getUsers() {
+        //add(new User(i, "Prueba", "Prueba", "correo@prueba"));
+        //i++;
         return new ArrayList<>(usuarios.values());
     }
 
