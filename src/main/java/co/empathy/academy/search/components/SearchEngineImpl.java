@@ -18,7 +18,7 @@ public class SearchEngineImpl implements SearchEngine{
     private void createClient(){
         // Create the low-level client
         RestClient restClient = RestClient.builder(
-                new HttpHost("localhost", 9200)).build();
+                new HttpHost("elasticsearch", 9200)).build();
 
         // Create the transport with a Jackson mapper
         ElasticsearchTransport transport = new RestClientTransport(

@@ -30,7 +30,7 @@ public class UserController {
         return new ResponseEntity<>(userService.getUsers(), HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/users/add", method = RequestMethod.POST)
+    @RequestMapping(value = "/users", method = RequestMethod.POST)
     public ResponseEntity<String> addUser(@RequestBody User user){
         if(userService.add(user)){
             return new ResponseEntity<>("User " + user.getName() + " added", HttpStatus.CREATED);
@@ -38,7 +38,7 @@ public class UserController {
         return new ResponseEntity<>("User " + user.getName() + " already exist", HttpStatus.CONFLICT);
     }
 
-    @RequestMapping(value = "/users/edit", method = RequestMethod.PUT)
+    @RequestMapping(value = "/users", method = RequestMethod.PUT)
     public ResponseEntity<String> editUser(@RequestBody User user){
         if(userService.edit(user)){
             return new ResponseEntity<>("User " + user.getName() + " edited", HttpStatus.OK);
@@ -46,7 +46,7 @@ public class UserController {
         return new ResponseEntity<>("User " + user.getName() + " do not exist", HttpStatus.NOT_FOUND);
     }
 
-    @RequestMapping(value = "/users/{id}/delete", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/users/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<String> deleteUser(@PathVariable int id){
         if(userService.delete(id)){
             return new ResponseEntity<>("User with id " + id + " deleted", HttpStatus.OK);
