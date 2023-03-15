@@ -18,11 +18,13 @@ public class UserApiTest {
     @Test
     void testAddOk() throws Exception {
         User user = new User(1, "Nombre","Apellido","user1@email.es");
-/*
-        mvc.perform(MockMvcRequestBuilders.post("/users/add")).content(user)
+
+        mvc.perform(MockMvcRequestBuilders.post("/users/add").content("{\"id\":" + user.getId()
+                        +",\"name\":\"" + user.getName() + "\",\"surname\":\"" + user.getSurname() +
+                        "\",\"email\":\"" + user.getEmail() + "\"}"))
                 .andExpect(MockMvcResultMatchers.content().json("User " + user.getName() + " added"))
                 .andExpect(MockMvcResultMatchers.status().isCreated());
 
- */
+
     }
 }

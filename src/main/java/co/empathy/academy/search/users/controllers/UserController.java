@@ -1,56 +1,75 @@
 package co.empathy.academy.search.users.controllers;
 
-import co.empathy.academy.search.users.services.UserService;
 import co.empathy.academy.search.users.entities.User;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.List;
 
-@RestController
-public class UserController {
-    @Autowired
-    private UserService userService;
+public interface UserController {
 
-    //No haría falta indicar que es un get ya que es el verbo http por defecto
-    @RequestMapping(value = "/users/{id}", method = RequestMethod.GET)
-    public ResponseEntity<User> getUser(@PathVariable int id){
-        User user = userService.getUser(id);
+    @Operation(summary = "Get user by id",
+            parameters = {@Parameter(in = ParameterIn.PATH, name = "id", description = "User id, an integrer")},
+            responses ={
+            @ApiResponse(responseCode = "200",
+            description = "operation done",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
+            @ApiResponse(responseCode = "404",
+            description = "User don't exist",
+            content = @Content(mediaType = "text/plain"))
+    })
+    ResponseEntity<User> getUser(@PathVariable int id);
 
-        if(user != null){
-            return new ResponseEntity<>(user, HttpStatus.OK);
-        }
-        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-    }
+    @Operation(summary = "List all users",
+    responses ={
+        @ApiResponse(responseCode = "200",
+                description = "operation done",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class)))
+    })
+    ResponseEntity<List<User>> getUsers();
 
-    @RequestMapping(value = "/users/all", method = RequestMethod.GET)
-    public ResponseEntity<List<User>> getUsers(){
-        return new ResponseEntity<>(userService.getUsers(), HttpStatus.OK);
-    }
+    @Operation(summary = "Add user",
+    responses ={
+        @ApiResponse(responseCode = "201",
+                description = "user added",
+                content = @Content(mediaType = "text/plain")),
+        @ApiResponse(responseCode = "409",
+                description = "User already exist",
+                content = @Content(mediaType = "text/plain"))
+    })
+    ResponseEntity<String> addUser(@RequestBody User user);
 
-    @RequestMapping(value = "/users", method = RequestMethod.POST)
-    public ResponseEntity<String> addUser(@RequestBody User user){
-        if(userService.add(user)){
-            return new ResponseEntity<>("User " + user.getName() + " added", HttpStatus.CREATED);
-        }
-        return new ResponseEntity<>("User " + user.getName() + " already exist", HttpStatus.CONFLICT);
-    }
+    @Operation(summary = "Edit user",
+            responses ={
+                    @ApiResponse(responseCode = "200",
+                            description = "information change",
+                            content = @Content(mediaType = "text/plain")),
+                    @ApiResponse(responseCode = "404",
+                            description = "User don't exist",
+                            content = @Content(mediaType = "text/plain"))
+            })
+    ResponseEntity<String> editUser(@RequestBody User user);
 
-    @RequestMapping(value = "/users", method = RequestMethod.PUT)
-    public ResponseEntity<String> editUser(@RequestBody User user){
-        if(userService.edit(user)){
-            return new ResponseEntity<>("User " + user.getName() + " edited", HttpStatus.OK);
-        }
-        return new ResponseEntity<>("User " + user.getName() + " do not exist", HttpStatus.NOT_FOUND);
-    }
-
-    @RequestMapping(value = "/users/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<String> deleteUser(@PathVariable int id){
-        if(userService.delete(id)){
-            return new ResponseEntity<>("User with id " + id + " deleted", HttpStatus.OK);
-        }
-        return new ResponseEntity<>("User with id " + id + " do not exist", HttpStatus.NOT_FOUND);
-    }
+    @Operation(summary = "Delete user by id",
+            parameters = {@Parameter(in = ParameterIn.PATH, name = "id", description = "User id, an integrer")},
+            responses ={
+                    @ApiResponse(responseCode = "200",
+                            description = "user deleted",
+                            content = @Content(mediaType = "text/plain")),
+                    @ApiResponse(responseCode = "404",
+                            description = "User don't exist",
+                            content = @Content(mediaType = "text/plain"))
+            })
+    ResponseEntity<String> deleteUser(@PathVariable int id);
 }
