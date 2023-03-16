@@ -5,7 +5,9 @@ import co.empathy.academy.search.users.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -54,4 +56,11 @@ public class UserControllerImpl implements UserController{
         }
         return new ResponseEntity<>("User with id " + id + " do not exist", HttpStatus.NOT_FOUND);
     }
+
+
+    @RequestMapping(value = "/async", method = RequestMethod.POST)
+    public void addUsersAsync(@RequestParam("file") MultipartFile file){
+        userService.saveUsers(file);
+    }
+
 }

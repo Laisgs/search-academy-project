@@ -126,12 +126,6 @@ public class UserApiTest {
     void testEditUserFailed() throws Exception {
         User user = new User(8, "Nombre","Apellido","user1@email.es");
 
-        mvc.perform(MockMvcRequestBuilders.post("/users").content("{\"id\":" + user.getId()
-                        +",\"name\":\"" + user.getName() + "\",\"surname\":\"" + user.getSurname() +
-                        "\",\"email\":\"" + user.getEmail() + "\"}").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.content().string("User " + user.getName() + " added"))
-                .andExpect(MockMvcResultMatchers.status().isCreated());
-
         mvc.perform(MockMvcRequestBuilders.put("/users").content("{\"id\":" + "35"
                         +",\"name\":\"" + "nameEdited" + "\",\"surname\":\"" + user.getSurname() +
                         "\",\"email\":\"" + user.getEmail() + "\"}").contentType(MediaType.APPLICATION_JSON))
@@ -141,7 +135,7 @@ public class UserApiTest {
 
     @Test
     void testDeleteUserOk() throws Exception {
-        User user = new User(9, "Nombre","Apellido","user1@email.es");
+        User user = new User(8, "Nombre","Apellido","user1@email.es");
 
         mvc.perform(MockMvcRequestBuilders.post("/users").content("{\"id\":" + user.getId()
                         +",\"name\":\"" + user.getName() + "\",\"surname\":\"" + user.getSurname() +

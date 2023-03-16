@@ -1,6 +1,7 @@
 package co.empathy.academy.search.users.services;
 
 import co.empathy.academy.search.users.entities.User;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,4 +16,6 @@ public interface UserService {
     boolean edit(User user);
 
     boolean delete(int id);
+
+    void saveUsers(MultipartFile file);
 }
