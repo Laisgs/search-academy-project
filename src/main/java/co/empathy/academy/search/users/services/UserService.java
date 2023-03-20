@@ -1,5 +1,6 @@
 package co.empathy.academy.search.users.services;
 
+import co.empathy.academy.search.exceptions.UserAlreadyExistException;
 import co.empathy.academy.search.users.entities.User;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,7 +12,7 @@ public interface UserService {
 
     List<User> getUsers();
 
-    boolean add(User user);
+    void add(User user) throws UserAlreadyExistException;
 
     boolean edit(User user);
 

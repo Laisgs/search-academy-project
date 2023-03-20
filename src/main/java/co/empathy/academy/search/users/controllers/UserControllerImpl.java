@@ -1,5 +1,6 @@
 package co.empathy.academy.search.users.controllers;
 
+import co.empathy.academy.search.exceptions.UserAlreadyExistException;
 import co.empathy.academy.search.users.services.UserService;
 import co.empathy.academy.search.users.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,11 +35,9 @@ public class UserControllerImpl implements UserController{
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public ResponseEntity<String> addUser(@RequestBody User user){
-        if(userService.add(user)){
-            return new ResponseEntity<>("User " + user.getName() + " added", HttpStatus.CREATED);
-        }
-        return new ResponseEntity<>("User " + user.getName() + " already exist", HttpStatus.CONFLICT);
+    public ResponseEntity<String> addUser(@RequestBody User user) throws UserAlreadyExistException {
+        userService.add(user);
+        return new ResponseEntity<>("User " + user.getName() + " added", HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "", method = RequestMethod.PUT)

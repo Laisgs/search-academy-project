@@ -1,5 +1,6 @@
 package co.empathy.academy.search.users.services.impl;
 
+import co.empathy.academy.search.exceptions.UserAlreadyExistException;
 import co.empathy.academy.search.users.entities.User;
 import co.empathy.academy.search.users.services.UserService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -32,12 +33,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean add(User user) {
+    public void add(User user) throws UserAlreadyExistException {
         if(!users.containsKey(user.getId())){
             users.put(user.getId(), user);
-            return true;
+        }else {
+            throw new UserAlreadyExistException("User alredy exist");
         }
-        return false;
     }
 
     @Override
@@ -63,12 +64,9 @@ public class UserServiceImpl implements UserService {
     public void saveUsers(MultipartFile file) {
         try {
 
-            System.out.println("E");
-
             List<User> usersInFile = new ObjectMapper().readValue(file.getBytes(), new TypeReference<>() {
             });
 
-            System.out.println(usersInFile.get(0).getName());
             usersInFile.forEach(this::add);
 
             /*

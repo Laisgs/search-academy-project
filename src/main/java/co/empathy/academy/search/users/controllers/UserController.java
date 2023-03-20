@@ -1,5 +1,6 @@
 package co.empathy.academy.search.users.controllers;
 
+import co.empathy.academy.search.exceptions.UserAlreadyExistException;
 import co.empathy.academy.search.users.entities.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -46,7 +47,7 @@ public interface UserController {
                 description = "User already exist",
                 content = @Content(mediaType = "text/plain"))
     })
-    ResponseEntity<String> addUser(@RequestBody User user);
+    ResponseEntity<String> addUser(@RequestBody User user) throws UserAlreadyExistException;
 
     @Operation(summary = "Edit user",
             responses ={
