@@ -1,5 +1,6 @@
 package co.empathy.academy.search.services;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -9,39 +10,14 @@ import java.util.List;
 
 @Service
 public class FileProcessServiceImpl implements FileProcessService{
-    private static final int NAMEBASISC = 0;
-    private static final int TITLEAKAS = 1;
-    private static final int TITLEBASICS = 2;
-    private static final int TITLECREW = 3;
-    private static final int TITLEEPISODE = 4;
-    private static final int TITLEPRINCIPALS = 5;
-    private static final int TITLERATINGS = 6;
-
     private File tmpFile;
     @Override
+    @Async
     public void save(MultipartFile file) throws IOException {
-        writeToTemporalFile2(file);
-        readData();
-        tmpFile.delete();
+        readData(file);
     }
 
     private void writeToTemporalFile(MultipartFile file) throws IOException {
-        tmpFile = File.createTempFile("IMDB-Search-App", ".tmp");
-        //FileOutputStream writer = new FileOutputStream(tmpFile);
-        BufferedWriter writer = new BufferedWriter(new FileWriter(tmpFile));
-        String toWrite;
-        //InputStream fileData = file.getInputStream();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
-
-
-        while ((toWrite =reader.readLine()) != null){
-            writer.write(toWrite);
-        }
-
-        writer.close();
-    }
-
-    private void writeToTemporalFile2(MultipartFile file) throws IOException {
         tmpFile = File.createTempFile("IMDB-Search-App", ".tmp");
         //FileOutputStream writer = new FileOutputStream(tmpFile);
         BufferedWriter writer = new BufferedWriter(new FileWriter(tmpFile));
@@ -55,50 +31,120 @@ public class FileProcessServiceImpl implements FileProcessService{
         writer.close();
     }
 
-    private void readData(){
+    private void readData(MultipartFile file){
         BufferedReader reader;
+
         try{
             String line;
-            String[] lineData;
-            List<String[]> list = new ArrayList<>();
 
-            reader = new BufferedReader(new FileReader(tmpFile));
+            reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+            line = reader.readLine();
 
-            int dataSetType = getDataSetType(line = reader.readLine());
+            if(line != null) {
+                String[] columsNames = line.split("\t");
 
-            while ((line = reader.readLine()) != null){
-                lineData = line.split("\t");
-
-
-
-                //list.add(lineData);
-                System.out.println(lineData[0]);
+                if (columsNames[1].equals("primaryName"))
+                    readNameBasics(reader);
+                else if (columsNames[1].equals("directors"))
+                    readTitleCrew(reader);
+                else if (columsNames[0].equals("titleId"))
+                    readTitleAkas(reader);
+                else if (columsNames[1].equals("titleType"))
+                    readTitleBasics(reader);
+                else if (columsNames[1].equals("parentTconst"))
+                    readTitleEpisode(reader);
+                else if (columsNames[2].equals("numVotes"))
+                    readTitleRatings(reader);
+                else if (columsNames[4].equals("job"))
+                    readTitlePrincipals(reader);
             }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private int getDataSetType(String firstLine) {
-        String[] columsNames = firstLine.split("\t");
+    private void readNameBasics(BufferedReader reader) throws IOException {
+        int linesReaded = 0;
+        String line;
+        String[] lineData;
 
-        switch (columsNames[0]){
-            case "primaryName":
-                return NAMEBASISC;
-            case "titleId":
-                return TITLEAKAS;
-            case "titleType":
-                return TITLEBASICS;
-            case "directors":
-                return TITLECREW;
-            case "parentTconst":
-                return TITLEEPISODE;
-            case "primaryName":
-                return TITLEPRINCIPALS;
-            case "primaryName":
-                return TITLERATINGS;
+        while ((line = reader.readLine()) != null){
+            lineData = line.split("\t");
+
+            //System.out.println(lineData[0]);
+        }
+    }
+
+    private void readTitleAkas(BufferedReader reader) throws IOException {
+        int linesReaded = 0;
+        String line;
+        String[] lineData;
+
+        while ((line = reader.readLine()) != null){
+            lineData = line.split("\t");
+
+            //System.out.println(lineData[0]);
+        }
+    }
+
+    private void readTitleBasics(BufferedReader reader) throws IOException {
+        int linesReaded = 0;
+        String line;
+        String[] lineData;
+
+        while ((line = reader.readLine()) != null){
+            lineData = line.split("\t");
+
+            //System.out.println(lineData[0]);
+        }
+    }
+
+    private void readTitleCrew(BufferedReader reader) throws IOException {
+        int linesReaded = 0;
+        String line;
+        String[] lineData;
+
+        while ((line = reader.readLine()) != null){
+            lineData = line.split("\t");
+
+            //System.out.println(lineData[0]);
+        }
+    }
+
+    private void readTitleEpisode(BufferedReader reader) throws IOException {
+        int linesReaded = 0;
+        String line;
+        String[] lineData;
+
+        while ((line = reader.readLine()) != null){
+            lineData = line.split("\t");
+
+            //System.out.println(lineData[0]);
+        }
+    }
+
+    private void readTitlePrincipals(BufferedReader reader) throws IOException {
+        int linesReaded = 0;
+        String line;
+        String[] lineData;
+
+        while ((line = reader.readLine()) != null){
+            lineData = line.split("\t");
+
+            //System.out.println(lineData[0]);
+        }
+    }
+
+    private void readTitleRatings(BufferedReader reader) throws IOException {
+        int linesReaded = 0;
+        String line;
+        String[] lineData;
+
+        while ((line = reader.readLine()) != null){
+            lineData = line.split("\t");
+
+            //System.out.println(lineData[0]);
         }
     }
 }
