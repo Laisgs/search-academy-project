@@ -105,27 +105,11 @@ public class FileProcessServiceImpl implements FileProcessService{
 
             if (!(Integer.parseInt(lineData[4]) == 1)) {
                 if (films.containsKey(lineData[0])) {
-
+                    currentFilm = films.get(lineData[0]);
+                    addDataTitleBasics(currentFilm, lineData);
                 } else {
                     currentFilm = new Film();
-                    currentFilm.setType(lineData[1]);
-                    currentFilm.setPrimaryTitle(lineData[2]);
-                    currentFilm.setOriginalTitle(lineData[3]);
-                    currentFilm.setStartYear(Integer.parseInt(lineData[5]));
-
-                    if (!lineData[6].equals("\\N")) {
-                        currentFilm.setEndYear(Integer.parseInt(lineData[6]));
-                    }
-
-                    if (!lineData[7].equals("\\N")) {
-                        currentFilm.setRuntimeMinutes(Integer.parseInt(lineData[7]));
-                    }
-
-                    lineData = lineData[8].split(",");
-
-                    for (int i=0; i<lineData.length; i++){
-                        currentFilm.addGenre(lineData[i]);
-                    }
+                    addDataTitleBasics(currentFilm, lineData);
 
                     films.put(lineData[0], currentFilm);
                 }
@@ -135,6 +119,27 @@ public class FileProcessServiceImpl implements FileProcessService{
         }
 
         films.forEach((key, value) -> System.out.println(value.toString()));
+    }
+
+    private void addDataTitleBasics(Film currentFilm, String[] lineData){
+        currentFilm.setType(lineData[1]);
+        currentFilm.setPrimaryTitle(lineData[2]);
+        currentFilm.setOriginalTitle(lineData[3]);
+        currentFilm.setStartYear(Integer.parseInt(lineData[5]));
+
+        if (!lineData[6].equals("\\N")) {
+            currentFilm.setEndYear(Integer.parseInt(lineData[6]));
+        }
+
+        if (!lineData[7].equals("\\N")) {
+            currentFilm.setRuntimeMinutes(Integer.parseInt(lineData[7]));
+        }
+
+        lineData = lineData[8].split(",");
+
+        for (int i=0; i<lineData.length; i++){
+            currentFilm.addGenre(lineData[i]);
+        }
     }
 
     private void readTitleCrew(BufferedReader reader) throws IOException {
