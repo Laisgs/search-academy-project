@@ -64,4 +64,22 @@ public class Film {
     public void setNumberOfVotes(int numberOfVotes) {
         this.numberOfVotes = numberOfVotes;
     }
+
+    @Override
+    public String toString() {
+        return "Film{" +
+                "titles=" + titles +
+                ", type='" + type + '\'' +
+                ", primaryTitle='" + primaryTitle + '\'' +
+                ", originalTitle='" + originalTitle + '\'' +
+                ", startYear=" + startYear +
+                ", endYear=" + endYear +
+                ", runtimeMinutes=" + runtimeMinutes +
+                ", genres=" + genres +
+                ", directorsIds=" + directorsIds +
+                ", writersIds=" + writersIds +
+                ", averageRating=" + averageRating +
+                ", numberOfVotes=" + numberOfVotes +
+                '}';
+    }
 }

@@ -1,5 +1,7 @@
 package co.empathy.academy.search.services;
 
+import co.empathy.academy.search.entities.Film;
+import co.empathy.academy.search.users.entities.User;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -7,10 +9,14 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class FileProcessServiceImpl implements FileProcessService{
     private File tmpFile;
+
+    private ConcurrentHashMap<String, Film> films = new ConcurrentHashMap<>();
+
     @Override
     @Async
     public void save(MultipartFile file) throws IOException {
@@ -92,12 +98,43 @@ public class FileProcessServiceImpl implements FileProcessService{
         int linesReaded = 0;
         String line;
         String[] lineData;
+        Film currentFilm;
 
         while ((line = reader.readLine()) != null){
             lineData = line.split("\t");
 
-            //System.out.println(lineData[0]);
+            if (!(Integer.parseInt(lineData[4]) == 1)) {
+                if (films.containsKey(lineData[0])) {
+
+                } else {
+                    currentFilm = new Film();
+                    currentFilm.setType(lineData[1]);
+                    currentFilm.setPrimaryTitle(lineData[2]);
+                    currentFilm.setOriginalTitle(lineData[3]);
+                    currentFilm.setStartYear(Integer.parseInt(lineData[5]));
+
+                    if (!lineData[6].equals("\\N")) {
+                        currentFilm.setEndYear(Integer.parseInt(lineData[6]));
+                    }
+
+                    if (!lineData[7].equals("\\N")) {
+                        currentFilm.setRuntimeMinutes(Integer.parseInt(lineData[7]));
+                    }
+
+                    lineData = lineData[8].split(",");
+
+                    for (int i=0; i<lineData.length; i++){
+                        currentFilm.addGenre(lineData[i]);
+                    }
+
+                    films.put(lineData[0], currentFilm);
+                }
+            }
+
+            linesReaded++;
         }
+
+        films.forEach((key, value) -> System.out.println(value.toString()));
     }
 
     private void readTitleCrew(BufferedReader reader) throws IOException {
