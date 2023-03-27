@@ -2,20 +2,38 @@ package co.empathy.academy.search.services;
 
 import co.empathy.academy.search.entities.Film;
 import co.empathy.academy.search.users.entities.User;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+import org.joda.time.LocalDate;
+import org.springframework.cglib.core.Local;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class FileProcessServiceImpl implements FileProcessService{
-    private File tmpFile;
+    private boolean nameBasics;
+    private boolean titleAkas;
+    private boolean titleBasics;
+    private boolean titleCrew;
+    private boolean titleEpisode;
+    private boolean titlePrincipals;
+    private boolean titleRatings;
 
     private ConcurrentHashMap<String, Film> films = new ConcurrentHashMap<>();
+
+    private void sendToElastic(){
+        if(nameBasics && titleAkas && titleBasics
+                && titleCrew && titleEpisode
+                && titlePrincipals && titleRatings){
+            //send
+        }
+    }
 
     @Override
     @Async
@@ -23,6 +41,7 @@ public class FileProcessServiceImpl implements FileProcessService{
         readData(file);
     }
 
+    /*
     private void writeToTemporalFile(MultipartFile file) throws IOException {
         tmpFile = File.createTempFile("IMDB-Search-App", ".tmp");
         //FileOutputStream writer = new FileOutputStream(tmpFile);
@@ -36,6 +55,7 @@ public class FileProcessServiceImpl implements FileProcessService{
 
         writer.close();
     }
+     */
 
     private void readData(MultipartFile file){
         BufferedReader reader;
@@ -118,7 +138,138 @@ public class FileProcessServiceImpl implements FileProcessService{
             linesReaded++;
         }
 
+        titleBasics = true;
+
+        sendToElastic();
+    }
+
+    private void readTitleCrew(BufferedReader reader) throws IOException {
+        int linesReaded = 0;
+        String line;
+        String[] lineData;
+        Film currentFilm;
+
+        while ((line = reader.readLine()) != null){
+            lineData = line.split("\t");
+
+                if (films.containsKey(lineData[0])) {
+                    currentFilm = films.get(lineData[0]);
+                    addDataTitleCrew(currentFilm, lineData);
+                } else {
+                    currentFilm = new Film();
+                    addDataTitleCrew(currentFilm, lineData);
+                    films.put(lineData[0], currentFilm);
+                }
+
+            linesReaded++;
+        }
+
         films.forEach((key, value) -> System.out.println(value.toString()));
+
+        titleCrew = true;
+        sendToElastic();
+    }
+
+    private void readTitleEpisode(BufferedReader reader) throws IOException {
+        int linesReaded = 0;
+        String line;
+        String[] lineData;
+        Film currentFilm;
+
+        while ((line = reader.readLine()) != null){
+            lineData = line.split("\t");
+
+            if (films.containsKey(lineData[0])) {
+                currentFilm = films.get(lineData[0]);
+                addDataTitleEpisode(currentFilm, lineData);
+            } else {
+                currentFilm = new Film();
+                addDataTitleEpisode(currentFilm, lineData);
+                films.put(lineData[0], currentFilm);
+            }
+
+            linesReaded++;
+        }
+
+        films.forEach((key, value) -> System.out.println(value.toString()));
+
+        titleEpisode = true;
+        sendToElastic();
+    }
+
+    private void readTitlePrincipals(BufferedReader reader) throws IOException {
+        int linesReaded = 0;
+        String line;
+        String[] lineData;
+        Film currentFilm;
+
+        while ((line = reader.readLine()) != null){
+            lineData = line.split("\t");
+
+            if (films.containsKey(lineData[0])) {
+                currentFilm = films.get(lineData[0]);
+                addDataTitlePrincipals(currentFilm, lineData);
+            } else {
+                currentFilm = new Film();
+                addDataTitlePrincipals(currentFilm, lineData);
+                films.put(lineData[0], currentFilm);
+            }
+
+            linesReaded++;
+        }
+
+        films.forEach((key, value) -> System.out.println(value.toString()));
+
+        titlePrincipals = true;
+        sendToElastic();
+    }
+
+    private void readTitleRatings(BufferedReader reader) throws IOException {
+        int linesReaded = 0;
+        String line;
+        String[] lineData;
+        Film currentFilm;
+
+        while ((line = reader.readLine()) != null){
+            lineData = line.split("\t");
+
+            if (films.containsKey(lineData[0])) {
+                currentFilm = films.get(lineData[0]);
+                addDataTitleRatings(currentFilm, lineData);
+            } else {
+                currentFilm = new Film();
+                addDataTitleRatings(currentFilm, lineData);
+                films.put(lineData[0], currentFilm);
+            }
+
+            linesReaded++;
+        }
+
+        films.forEach((key, value) -> System.out.println(value.toString()));
+
+        titleRatings = true;
+        sendToElastic();
+    }
+
+    private void addDataTitleCrew(Film currentFilm, String[] lineData){
+        String[] directors;
+        String[] writers;
+
+        if (!lineData[1].equals("\\N")) {
+            directors = lineData[1].split(",");
+
+            for (int i=0; i<directors.length; i++){
+                currentFilm.addDirectorId(directors[i]);
+            }
+        }
+
+        if (!lineData[2].equals("\\N")) {
+            writers = lineData[2].split(",");
+
+            for (int i=0; i<writers.length; i++){
+                currentFilm.addWriterId(writers[i]);
+            }
+        }
     }
 
     private void addDataTitleBasics(Film currentFilm, String[] lineData){
@@ -142,51 +293,16 @@ public class FileProcessServiceImpl implements FileProcessService{
         }
     }
 
-    private void readTitleCrew(BufferedReader reader) throws IOException {
-        int linesReaded = 0;
-        String line;
-        String[] lineData;
+    private void addDataTitleEpisode(Film currentFilm, String[] lineData){
 
-        while ((line = reader.readLine()) != null){
-            lineData = line.split("\t");
-
-            //System.out.println(lineData[0]);
-        }
     }
 
-    private void readTitleEpisode(BufferedReader reader) throws IOException {
-        int linesReaded = 0;
-        String line;
-        String[] lineData;
+    private void addDataTitlePrincipals(Film currentFilm, String[] lineData){
 
-        while ((line = reader.readLine()) != null){
-            lineData = line.split("\t");
-
-            //System.out.println(lineData[0]);
-        }
     }
 
-    private void readTitlePrincipals(BufferedReader reader) throws IOException {
-        int linesReaded = 0;
-        String line;
-        String[] lineData;
-
-        while ((line = reader.readLine()) != null){
-            lineData = line.split("\t");
-
-            //System.out.println(lineData[0]);
-        }
-    }
-
-    private void readTitleRatings(BufferedReader reader) throws IOException {
-        int linesReaded = 0;
-        String line;
-        String[] lineData;
-
-        while ((line = reader.readLine()) != null){
-            lineData = line.split("\t");
-
-            //System.out.println(lineData[0]);
-        }
+    private void addDataTitleRatings(Film currentFilm, String[] lineData){
+        currentFilm.setAverageRating(Double.parseDouble(lineData[1]));
+        currentFilm.setNumberOfVotes(Integer.parseInt(lineData[2]));
     }
 }
