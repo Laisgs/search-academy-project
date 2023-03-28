@@ -39,4 +39,17 @@ public class Title {
     public void setIsOriginalTitle() {
         isOriginalTitle = true;
     }
+
+    @Override
+    public String toString() {
+        return "Title{" +
+                "id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", region='" + region + '\'' +
+                ", language='" + language + '\'' +
+                ", types=" + types +
+                ", attributes=" + attributes +
+                ", isOriginalTitle=" + isOriginalTitle +
+                '}';
+    }
 }
