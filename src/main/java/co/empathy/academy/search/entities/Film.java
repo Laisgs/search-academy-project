@@ -17,6 +17,8 @@ public class Film {
     private double averageRating;
     private int numberOfVotes;
 
+
+
     public void addTitles(List<Title> titles){
         titles.addAll(titles);
     }

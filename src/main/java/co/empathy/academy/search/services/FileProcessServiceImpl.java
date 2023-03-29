@@ -1,5 +1,6 @@
 package co.empathy.academy.search.services;
 
+import co.empathy.academy.search.entities.Episode;
 import co.empathy.academy.search.entities.Film;
 import co.empathy.academy.search.entities.Title;
 import org.springframework.scheduling.annotation.Async;
@@ -23,6 +24,7 @@ public class FileProcessServiceImpl implements FileProcessService{
     private boolean titleRatings;
 
     private ConcurrentHashMap<String, Film> films = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Episode> episodes = new ConcurrentHashMap<>();
     private HashMap<String, List<Title>> titles = new HashMap<>();
 
     private void sendToElastic(){
@@ -124,6 +126,7 @@ public class FileProcessServiceImpl implements FileProcessService{
 
 
         while ((line = reader.readLine()) != null){
+
             lineData = line.split("\t");
 
             if (titles.containsKey(lineData[0])) {
@@ -242,18 +245,18 @@ public class FileProcessServiceImpl implements FileProcessService{
         int linesReaded = 0;
         String line;
         String[] lineData;
-        Film currentFilm;
+        Episode currentEpisode;
 
         while ((line = reader.readLine()) != null){
             lineData = line.split("\t");
 
-            if (films.containsKey(lineData[0])) {
-                currentFilm = films.get(lineData[0]);
-                addDataTitleEpisode(currentFilm, lineData);
+            if (episodes.containsKey(lineData[0])) {
+                currentEpisode = episodes.get(lineData[0]);
+                addDataTitleEpisode(currentEpisode, lineData);
             } else {
-                currentFilm = new Film();
-                addDataTitleEpisode(currentFilm, lineData);
-                films.put(lineData[0], currentFilm);
+                currentEpisode = new Episode();
+                addDataTitleEpisode(currentEpisode, lineData);
+                episodes.put(lineData[0], currentEpisode);
             }
 
             linesReaded++;
@@ -358,8 +361,16 @@ public class FileProcessServiceImpl implements FileProcessService{
         }
     }
 
-    private void addDataTitleEpisode(Film currentFilm, String[] lineData){
+    private void addDataTitleEpisode(Episode currentEpisode, String[] lineData){
+        currentEpisode.setId(lineData[0]);
+        currentEpisode.setParentId(lineData[1]);
 
+        if (!lineData[2].equals("\\N")) {
+            currentEpisode.setSeasonNumber(Integer.parseInt(lineData[2]));
+        }
+        if (!lineData[3].equals("\\N")) {
+            currentEpisode.setEpisodeNumber(Integer.parseInt(lineData[3]));
+        }
     }
 
     private void addDataTitlePrincipals(Film currentFilm, String[] lineData){
