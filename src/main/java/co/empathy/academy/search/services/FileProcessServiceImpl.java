@@ -1,8 +1,10 @@
 package co.empathy.academy.search.services;
 
+import co.empathy.academy.search.components.SearchEngine;
 import co.empathy.academy.search.entities.Episode;
 import co.empathy.academy.search.entities.Film;
 import co.empathy.academy.search.entities.Title;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class FileProcessServiceImpl implements FileProcessService{
+    @Autowired
+    private SearchEngine searchEngine;
     private boolean nameBasics;
     private boolean titleAkas;
     private boolean titleBasics;
@@ -28,6 +32,25 @@ public class FileProcessServiceImpl implements FileProcessService{
     private HashMap<String, List<Title>> titles = new HashMap<>();
 
     private void sendToElastic(){
+        //films.forEach((key, value) -> System.out.println(value.toString()));
+        System.out.println("E5");
+        if(titleAkas && titleBasics
+                && titleCrew && titleRatings){
+            System.out.println("E6");
+            titles.forEach((key, value) -> films.get(key).addTitles(value));
+
+            try {
+                searchEngine.bulkIndexFilms(films.values());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            films.clear();
+            reset();
+        }
+    }
+
+    private void sendToElastic2(){
         films.forEach((key, value) -> System.out.println(value.toString()));
         if(nameBasics && titleAkas && titleBasics
                 && titleCrew && titleEpisode
@@ -137,6 +160,7 @@ public class FileProcessServiceImpl implements FileProcessService{
                 titlesList.add(creatTitleAkas(lineData));
                 titles.put(lineData[0], titlesList);
             }
+
             if (!lineData[0].equals(lastId)){
                 linesReaded++;
             }
@@ -144,45 +168,9 @@ public class FileProcessServiceImpl implements FileProcessService{
             lastId = lineData[0];
         }
 
-        titles.forEach((key, value) -> System.out.println(value.toString()));
-
         titleAkas = true;
+        System.out.println("E1");
         sendToElastic();
-    }
-
-    private Title creatTitleAkas(String[] lineData) {
-        Title actualTitle = new Title();
-        actualTitle.setId(lineData[0]);
-        actualTitle.setTitle(lineData[2]);
-        if (!lineData[3].equals("\\N")) {
-            actualTitle.setRegion(lineData[3]);
-        }
-        if (!lineData[4].equals("\\N")) {
-            actualTitle.setLanguage(lineData[4]);
-        }
-
-        if (!lineData[5].equals("\\N")) {
-            String[] types = lineData[5].split(",");
-
-            for (int i=0; i<types.length; i++){
-                actualTitle.addType(types[i]);
-            }
-        }
-
-        if (!lineData[6].equals("\\N")) {
-            String[] atributes = lineData[6].split(",");
-
-            for (int i=0; i<atributes.length; i++){
-                actualTitle.addAttribute(atributes[i]);
-            }
-        }
-
-        if(lineData[7].equals("1")){
-            actualTitle.setIsOriginalTitle();
-        }
-
-
-        return actualTitle;
     }
 
     private void readTitleBasics(BufferedReader reader) throws IOException {
@@ -190,6 +178,7 @@ public class FileProcessServiceImpl implements FileProcessService{
         String line;
         String[] lineData;
         Film currentFilm;
+        String lastId = ".";
 
         while ((line = reader.readLine()) != null){
             lineData = line.split("\t");
@@ -206,14 +195,22 @@ public class FileProcessServiceImpl implements FileProcessService{
                 }
             }
 
-            linesReaded++;
+            if (!lineData[0].equals(lastId)){
+                linesReaded++;
+            }
 
-            if(linesReaded >= 100){
+            lastId = lineData[0];
+
+            if(linesReaded >= 1000000){
                 titleBasics = true;
-                sendToElastic();
+
                 linesReaded = 0;
             }
         }
+
+        titleBasics = true;
+        System.out.println("E2");
+        sendToElastic();
     }
 
     private void readTitleCrew(BufferedReader reader) throws IOException {
@@ -221,6 +218,7 @@ public class FileProcessServiceImpl implements FileProcessService{
         String line;
         String[] lineData;
         Film currentFilm;
+        String lastId = ".";
 
         while ((line = reader.readLine()) != null){
             lineData = line.split("\t");
@@ -234,10 +232,15 @@ public class FileProcessServiceImpl implements FileProcessService{
                     films.put(lineData[0], currentFilm);
                 }
 
-            linesReaded++;
+            if (!lineData[0].equals(lastId)){
+                linesReaded++;
+            }
+
+            lastId = lineData[0];
         }
 
         titleCrew = true;
+        System.out.println("E3");
         sendToElastic();
     }
 
@@ -246,6 +249,7 @@ public class FileProcessServiceImpl implements FileProcessService{
         String line;
         String[] lineData;
         Episode currentEpisode;
+        String lastId = ".";
 
         while ((line = reader.readLine()) != null){
             lineData = line.split("\t");
@@ -259,11 +263,15 @@ public class FileProcessServiceImpl implements FileProcessService{
                 episodes.put(lineData[0], currentEpisode);
             }
 
-            linesReaded++;
+            if (!lineData[0].equals(lastId)){
+                linesReaded++;
+            }
+
+            lastId = lineData[0];
         }
 
         titleEpisode = true;
-        sendToElastic();
+
     }
 
     private void readTitlePrincipals(BufferedReader reader) throws IOException {
@@ -271,6 +279,7 @@ public class FileProcessServiceImpl implements FileProcessService{
         String line;
         String[] lineData;
         Film currentFilm;
+        String lastId = ".";
 
         while ((line = reader.readLine()) != null){
             lineData = line.split("\t");
@@ -284,11 +293,15 @@ public class FileProcessServiceImpl implements FileProcessService{
                 films.put(lineData[0], currentFilm);
             }
 
-            linesReaded++;
+            if (!lineData[0].equals(lastId)){
+                linesReaded++;
+            }
+
+            lastId = lineData[0];
         }
 
         titlePrincipals = true;
-        sendToElastic();
+
     }
 
     private void readTitleRatings(BufferedReader reader) throws IOException {
@@ -296,6 +309,7 @@ public class FileProcessServiceImpl implements FileProcessService{
         String line;
         String[] lineData;
         Film currentFilm;
+        String lastId = ".";
 
         while ((line = reader.readLine()) != null){
             lineData = line.split("\t");
@@ -309,10 +323,15 @@ public class FileProcessServiceImpl implements FileProcessService{
                 films.put(lineData[0], currentFilm);
             }
 
-            linesReaded++;
+            if (!lineData[0].equals(lastId)){
+                linesReaded++;
+            }
+
+            lastId = lineData[0];
         }
 
         titleRatings = true;
+        System.out.println("E4");
         sendToElastic();
     }
 
@@ -380,5 +399,40 @@ public class FileProcessServiceImpl implements FileProcessService{
     private void addDataTitleRatings(Film currentFilm, String[] lineData){
         currentFilm.setAverageRating(Double.parseDouble(lineData[1]));
         currentFilm.setNumberOfVotes(Integer.parseInt(lineData[2]));
+    }
+
+    private Title creatTitleAkas(String[] lineData) {
+        Title actualTitle = new Title();
+        actualTitle.setId(lineData[0]);
+        actualTitle.setTitle(lineData[2]);
+        if (!lineData[3].equals("\\N")) {
+            actualTitle.setRegion(lineData[3]);
+        }
+        if (!lineData[4].equals("\\N")) {
+            actualTitle.setLanguage(lineData[4]);
+        }
+
+        if (!lineData[5].equals("\\N")) {
+            String[] types = lineData[5].split(",");
+
+            for (int i=0; i<types.length; i++){
+                actualTitle.addType(types[i]);
+            }
+        }
+
+        if (!lineData[6].equals("\\N")) {
+            String[] atributes = lineData[6].split(",");
+
+            for (int i=0; i<atributes.length; i++){
+                actualTitle.addAttribute(atributes[i]);
+            }
+        }
+
+        if(lineData[7].equals("1")){
+            actualTitle.setIsOriginalTitle();
+        }
+
+
+        return actualTitle;
     }
 }

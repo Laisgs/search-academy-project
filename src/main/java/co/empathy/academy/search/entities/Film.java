@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Film {
+    private String id;
     private List<Title> titles = new ArrayList<>();
     private String type;
     private String primaryTitle;
@@ -17,7 +18,13 @@ public class Film {
     private double averageRating;
     private int numberOfVotes;
 
+    public String getId() {
+        return id;
+    }
 
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public void addTitles(List<Title> titles){
         titles.addAll(titles);
