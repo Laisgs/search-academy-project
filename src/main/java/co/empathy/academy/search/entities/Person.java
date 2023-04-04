@@ -10,8 +10,8 @@ public class Person {
     private List<String> primaryProfessions = new ArrayList<>();
     private List<String> knownForTitles = new ArrayList<>();
 
-    public void addProfession(String profssion){
-        primaryProfessions.add(profssion);
+    public void addProfession(String profession){
+        primaryProfessions.add(profession);
     }
 
     public void addFilmId(String id){

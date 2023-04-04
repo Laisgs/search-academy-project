@@ -5,152 +5,125 @@ import co.empathy.academy.search.entities.Episode;
 import co.empathy.academy.search.entities.Film;
 import co.empathy.academy.search.entities.Title;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class FileProcessServiceImpl implements FileProcessService{
+public class FileProcessServiceImpl implements FileProcessService {
+    private BufferedReader akasReader;
+    private BufferedReader titleBasicsReader;
+    private BufferedReader ratingsReader;
+    private BufferedReader crewReader;
+    private BufferedReader episodeReader;
+    private BufferedReader principalsReader;
+
+    private int bulkSize = 50;
+    private int markSize = 100000;
+
+
     @Autowired
     private SearchEngine searchEngine;
-    private boolean nameBasics;
-    private boolean titleAkas;
-    private boolean titleBasics;
-    private boolean titleCrew;
-    private boolean titleEpisode;
-    private boolean titlePrincipals;
-    private boolean titleRatings;
 
-    private ConcurrentHashMap<String, Film> films = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, Episode> episodes = new ConcurrentHashMap<>();
-    private HashMap<String, List<Title>> titles = new HashMap<>();
-
-    private void sendToElastic(){
-        //films.forEach((key, value) -> System.out.println(value.toString()));
-        System.out.println("E5");
-        if(titleAkas && titleBasics
-                && titleCrew && titleRatings){
-            System.out.println("E6");
-            titles.forEach((key, value) -> films.get(key).addTitles(value));
-
-            try {
-                searchEngine.bulkIndexFilms(films.values());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            films.clear();
-            reset();
-        }
-    }
-
-    private void sendToElastic2(){
-        films.forEach((key, value) -> System.out.println(value.toString()));
-        if(nameBasics && titleAkas && titleBasics
-                && titleCrew && titleEpisode
-                && titlePrincipals && titleRatings){
-            //send
-            titles.forEach((key, value) -> films.get(key).addTitles(value));
-            reset();
-        }
-
-        films.clear();
-    }
-
-    private void reset(){
-        titleBasics = false;
-        nameBasics = false;
-        titleAkas = false;
-        titleCrew = false;
-        titleEpisode = false;
-        titlePrincipals = false;
-        titleRatings = false;
-    }
-
-    @Override
-    @Async
-    public void save(MultipartFile file) throws IOException {
-        readData(file);
-    }
-
-    /*
-    private void writeToTemporalFile(MultipartFile file) throws IOException {
-        tmpFile = File.createTempFile("IMDB-Search-App", ".tmp");
-        //FileOutputStream writer = new FileOutputStream(tmpFile);
-        BufferedWriter writer = new BufferedWriter(new FileWriter(tmpFile));
-        int toWrite;
-        InputStream fileData = file.getInputStream();
-
-        while ((toWrite = fileData.read()) != -1){
-            writer.write(toWrite);
-        }
-
-        writer.close();
-    }
-     */
-
-    private void readData(MultipartFile file){
-        BufferedReader reader;
-
-        try{
-            String line;
-
-            reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
-            line = reader.readLine();
-
-            if(line != null) {
-                String[] columsNames = line.split("\t");
-
-                if (columsNames[1].equals("primaryName"))
-                    readNameBasics(reader);
-                else if (columsNames[1].equals("directors"))
-                    readTitleCrew(reader);
-                else if (columsNames[0].equals("titleId"))
-                    readTitleAkas(reader);
-                else if (columsNames[1].equals("titleType"))
-                    readTitleBasics(reader);
-                else if (columsNames[1].equals("parentTconst"))
-                    readTitleEpisode(reader);
-                else if (columsNames[2].equals("numVotes"))
-                    readTitleRatings(reader);
-                else if (columsNames[4].equals("job"))
-                    readTitlePrincipals(reader);
-            }
-
+    private void sendToElastic(HashMap<String, Film> films) {
+        try {
+            searchEngine.bulkIndexFilms(films.values());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void readNameBasics(BufferedReader reader) throws IOException {
+    @Override
+    public void save(MultipartFile titleAkas, MultipartFile basics, MultipartFile ratings, MultipartFile crew, MultipartFile episodes, MultipartFile principals) throws IOException {
+        titleBasicsReader = new BufferedReader(new InputStreamReader(basics.getInputStream()));
+        akasReader = new BufferedReader(new InputStreamReader(titleAkas.getInputStream()));
+        ratingsReader = new BufferedReader(new InputStreamReader(ratings.getInputStream()));
+        crewReader = new BufferedReader(new InputStreamReader(crew.getInputStream()));
+        //episodeReader = new BufferedReader(new InputStreamReader(episodes.getInputStream()));
+        //principalsReader = new BufferedReader(new InputStreamReader(principals.getInputStream()));
+        titleBasicsReader.readLine();
+        akasReader.readLine();
+        ratingsReader.readLine();
+        crewReader.readLine();
+        //episodeReader.readLine();
+        //principalsReader.readLine();
+        readTitleBasics();
+    }
+
+    private void readTitleBasics() throws IOException {
         int linesReaded = 0;
         String line;
         String[] lineData;
+        Film currentFilm;
+        HashMap<String, Film> films = new HashMap<>();
+        String lastId = ".";
 
-        while ((line = reader.readLine()) != null){
+        while ((line = titleBasicsReader.readLine()) != null){
             lineData = line.split("\t");
 
-            //System.out.println(lineData[0]);
+            if (!(Integer.parseInt(lineData[4]) == 1)) {
+                currentFilm = new Film();
+                addDataTitleBasics(currentFilm, lineData);
+                films.put(lineData[0], currentFilm);
+            }
+
+            if (!lineData[0].equals(lastId)){
+                linesReaded++;
+            }
+
+            lastId = lineData[0];
+
+            if(linesReaded >= bulkSize){
+                readTitleRatings(films);
+                readTitleCrew(films);
+
+                    readTitleAkas(lastId).forEach((key, value) -> {
+                        try {
+                            films.get(key).addTitles(value);
+                        }catch (NullPointerException ex){
+                            System.out.println(key);
+                        }
+                    });
+
+                sendToElastic(films);
+                films.clear();
+                reset();
+                linesReaded = 0;
+            }
         }
     }
 
-    private void readTitleAkas(BufferedReader reader) throws IOException {
+    private void reset() throws IOException {
+        System.out.println("E");
+        ratingsReader.reset();
+        crewReader.reset();
+        akasReader.reset();
+    }
+
+    private HashMap<String, List<Title>> readTitleAkas(String lastId) throws IOException {
         int linesReaded = 0;
         String line;
         String[] lineData;
         List<Title> titlesList;
-        String lastId = ".";
+        HashMap<String, List<Title>> titles = new HashMap<>();
+        boolean lasFilm = false;
 
 
-        while ((line = reader.readLine()) != null){
-
+        while ((line = akasReader.readLine()) != null){
             lineData = line.split("\t");
+
+            if(lastId.equals(lineData[0]))
+                lasFilm = true;
+            if(lasFilm && !(lastId.equals(lineData[0]))){
+                akasReader.mark(markSize);
+                return titles;
+            }
 
             if (titles.containsKey(lineData[0])) {
                 titlesList = titles.get(lineData[0]);
@@ -160,98 +133,77 @@ public class FileProcessServiceImpl implements FileProcessService{
                 titlesList.add(creatTitleAkas(lineData));
                 titles.put(lineData[0], titlesList);
             }
-
-            if (!lineData[0].equals(lastId)){
-                linesReaded++;
-            }
-
-            lastId = lineData[0];
         }
 
-        titleAkas = true;
-        System.out.println("E1");
-        sendToElastic();
+        return titles;
     }
 
-    private void readTitleBasics(BufferedReader reader) throws IOException {
+    private void readTitleCrew(HashMap<String, Film> films) throws IOException {
         int linesReaded = 0;
         String line;
         String[] lineData;
         Film currentFilm;
         String lastId = ".";
 
-        while ((line = reader.readLine()) != null){
+        while ((line = crewReader.readLine()) != null){
             lineData = line.split("\t");
 
-            if (!(Integer.parseInt(lineData[4]) == 1)) {
-                if (films.containsKey(lineData[0])) {
-                    currentFilm = films.get(lineData[0]);
-                    addDataTitleBasics(currentFilm, lineData);
-                } else {
-                    currentFilm = new Film();
-                    addDataTitleBasics(currentFilm, lineData);
+            if (films.containsKey(lineData[0])) {
+                currentFilm = films.get(lineData[0]);
+                addDataTitleCrew(currentFilm, lineData);
 
-                    films.put(lineData[0], currentFilm);
+                if (!lineData[0].equals(lastId)){
+                    linesReaded++;
                 }
+
+                lastId = lineData[0];
             }
 
-            if (!lineData[0].equals(lastId)){
-                linesReaded++;
+            if(linesReaded == (bulkSize)){
+                crewReader.mark(markSize);
             }
-
-            lastId = lineData[0];
-
-            if(linesReaded >= 1000000){
-                titleBasics = true;
-
-                linesReaded = 0;
+            if(linesReaded >= bulkSize){
+                return;
             }
         }
-
-        titleBasics = true;
-        System.out.println("E2");
-        sendToElastic();
     }
 
-    private void readTitleCrew(BufferedReader reader) throws IOException {
+    private void readTitleRatings(HashMap<String, Film> films) throws IOException {
         int linesReaded = 0;
         String line;
         String[] lineData;
         Film currentFilm;
         String lastId = ".";
 
-        while ((line = reader.readLine()) != null){
+        while ((line = ratingsReader.readLine()) != null){
             lineData = line.split("\t");
 
-                if (films.containsKey(lineData[0])) {
-                    currentFilm = films.get(lineData[0]);
-                    addDataTitleCrew(currentFilm, lineData);
-                } else {
-                    currentFilm = new Film();
-                    addDataTitleCrew(currentFilm, lineData);
-                    films.put(lineData[0], currentFilm);
-                }
+            if (films.containsKey(lineData[0])) {
+                currentFilm = films.get(lineData[0]);
+                addDataTitleRatings(currentFilm, lineData);
 
-            if (!lineData[0].equals(lastId)){
-                linesReaded++;
+                if (!lineData[0].equals(lastId)){
+                    linesReaded++;
+                }
+                lastId = lineData[0];
             }
 
-            lastId = lineData[0];
+            if(linesReaded == bulkSize){
+                ratingsReader.mark(markSize);
+                return;
+            }
         }
-
-        titleCrew = true;
-        System.out.println("E3");
-        sendToElastic();
     }
 
-    private void readTitleEpisode(BufferedReader reader) throws IOException {
+    private void readTitleEpisode() throws IOException {
         int linesReaded = 0;
         String line;
         String[] lineData;
         Episode currentEpisode;
         String lastId = ".";
+        HashMap<String, Episode> episodes = new HashMap<>();
 
-        while ((line = reader.readLine()) != null){
+        while ((line = episodeReader.readLine()) != null){
             lineData = line.split("\t");
 
             if (episodes.containsKey(lineData[0])) {
@@ -269,70 +221,34 @@ public class FileProcessServiceImpl implements FileProcessService{
 
             lastId = lineData[0];
         }
-
-        titleEpisode = true;
-
     }
 
-    private void readTitlePrincipals(BufferedReader reader) throws IOException {
+    private void readTitlePrincipals(HashMap<String, Film> films) throws IOException {
         int linesReaded = 0;
         String line;
         String[] lineData;
         Film currentFilm;
         String lastId = ".";
 
-        while ((line = reader.readLine()) != null){
+        while ((line = principalsReader.readLine()) != null){
             lineData = line.split("\t");
 
             if (films.containsKey(lineData[0])) {
                 currentFilm = films.get(lineData[0]);
                 addDataTitlePrincipals(currentFilm, lineData);
-            } else {
-                currentFilm = new Film();
-                addDataTitlePrincipals(currentFilm, lineData);
-                films.put(lineData[0], currentFilm);
+
+                if (!lineData[0].equals(lastId)){
+                    linesReaded++;
+                }
+
+                lastId = lineData[0];
             }
 
-            if (!lineData[0].equals(lastId)){
-                linesReaded++;
+            if(linesReaded == bulkSize){
+                principalsReader.mark(markSize);
+                return;
             }
-
-            lastId = lineData[0];
         }
-
-        titlePrincipals = true;
-
-    }
-
-    private void readTitleRatings(BufferedReader reader) throws IOException {
-        int linesReaded = 0;
-        String line;
-        String[] lineData;
-        Film currentFilm;
-        String lastId = ".";
-
-        while ((line = reader.readLine()) != null){
-            lineData = line.split("\t");
-
-            if (films.containsKey(lineData[0])) {
-                currentFilm = films.get(lineData[0]);
-                addDataTitleRatings(currentFilm, lineData);
-            } else {
-                currentFilm = new Film();
-                addDataTitleRatings(currentFilm, lineData);
-                films.put(lineData[0], currentFilm);
-            }
-
-            if (!lineData[0].equals(lastId)){
-                linesReaded++;
-            }
-
-            lastId = lineData[0];
-        }
-
-        titleRatings = true;
-        System.out.println("E4");
-        sendToElastic();
     }
 
     private void addDataTitleCrew(Film currentFilm, String[] lineData){

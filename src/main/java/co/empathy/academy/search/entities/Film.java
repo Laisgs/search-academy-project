@@ -27,7 +27,7 @@ public class Film {
     }
 
     public void addTitles(List<Title> titles){
-        titles.addAll(titles);
+        this.titles.addAll(titles);
     }
 
     public void addGenre(String genre){

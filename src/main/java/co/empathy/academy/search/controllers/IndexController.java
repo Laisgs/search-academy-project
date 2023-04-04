@@ -17,7 +17,12 @@ public class IndexController {
     private FileProcessService fileProcessService;
 
     @RequestMapping(value = "/index", method = RequestMethod.POST)
-    public void uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
-        fileProcessService.save(file);
+    public void uploadFiles(@RequestParam("akas") MultipartFile akas,
+                            @RequestParam("titleBasics") MultipartFile titleBasics,
+                            @RequestParam("crew") MultipartFile crew,
+                            @RequestParam("ratings") MultipartFile ratings,
+                            @RequestParam("episodes") MultipartFile episodes,
+                            @RequestParam("principals") MultipartFile principals) throws IOException {
+        fileProcessService.save(akas, titleBasics, ratings, crew, episodes, principals);
     }
 }
