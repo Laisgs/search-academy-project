@@ -4,6 +4,7 @@ import co.empathy.academy.search.components.SearchEngine;
 import co.empathy.academy.search.entities.Episode;
 import co.empathy.academy.search.entities.Film;
 import co.empathy.academy.search.entities.Title;
+import co.empathy.academy.search.entities.Work;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -56,13 +57,13 @@ public class FileProcessServiceImpl implements FileProcessService {
         ratingsReader = new BufferedReader(new InputStreamReader(ratings.getInputStream()));
         crewReader = new BufferedReader(new InputStreamReader(crew.getInputStream()));
         //episodeReader = new BufferedReader(new InputStreamReader(episodes.getInputStream()));
-        //principalsReader = new BufferedReader(new InputStreamReader(principals.getInputStream()));
+        principalsReader = new BufferedReader(new InputStreamReader(principals.getInputStream()));
         titleBasicsReader.readLine();
         akasReader.readLine();
         ratingsReader.readLine();
         crewReader.readLine();
         //episodeReader.readLine();
-        //principalsReader.readLine();
+        principalsReader.readLine();
         long inicio = System.currentTimeMillis();
         readTitleBasics();
         long fin = System.currentTimeMillis();
@@ -101,6 +102,14 @@ public class FileProcessServiceImpl implements FileProcessService {
                 readTitleAkas(lastId).forEach((key, value) -> {
                     try {
                         films.get(key).addTitles(value);
+                    }catch (NullPointerException ex){
+                        //System.out.println(key);
+                    }
+                });
+
+                readTitlePrincipals(lastId).forEach((key, value) -> {
+                    try {
+                        films.get(key).addWorks(value);
                     }catch (NullPointerException ex){
                         //System.out.println(key);
                     }
@@ -156,6 +165,42 @@ public class FileProcessServiceImpl implements FileProcessService {
         }
         akasReader.mark(markSize);
         return titles;
+    }
+
+    private HashMap<String, List<Work>> readTitlePrincipals(String lastId) throws IOException {
+        int linesReaded = 0;
+        String line;
+        String[] lineData;
+        List<Work> workList;
+        HashMap<String, List<Work>> works = new HashMap<>();
+
+        boolean last = false;
+
+        while ((line = principalsReader.readLine()) != null){
+            lineData = line.split("\t");
+
+            if (lastId.equals(lineData[0]))
+                last=true;
+            if(last && !(lastId.equals(lineData[0]))
+                    || Integer.parseInt(lastId.substring(2))
+                    <
+                    Integer.parseInt(lineData[0].substring(2))){
+                akasReader.mark(markSize);
+                return works;
+            }
+
+            if (works.containsKey(lineData[0])) {
+                workList = works.get(lineData[0]);
+                workList.add(createTitlePrincipals(lineData));
+            } else {
+                workList = new ArrayList<>();
+                workList.add(createTitlePrincipals(lineData));
+                works.put(lineData[0], workList);
+            }
+
+        }
+        principalsReader.mark(markSize);
+        return works;
     }
 
     private void readTitleCrew(HashMap<String, Film> films) throws IOException {
@@ -246,34 +291,6 @@ public class FileProcessServiceImpl implements FileProcessService {
         }
     }
 
-    private void readTitlePrincipals(HashMap<String, Film> films) throws IOException {
-        int linesReaded = 0;
-        String line;
-        String[] lineData;
-        Film currentFilm;
-        String lastId = ".";
-
-        while ((line = principalsReader.readLine()) != null){
-            lineData = line.split("\t");
-
-            if (films.containsKey(lineData[0])) {
-                currentFilm = films.get(lineData[0]);
-                addDataTitlePrincipals(currentFilm, lineData);
-
-                if (!lineData[0].equals(lastId)){
-                    linesReaded++;
-                }
-
-                lastId = lineData[0];
-            }
-
-            if(linesReaded == bulkSize){
-                principalsReader.mark(markSize);
-                return;
-            }
-        }
-    }
-
     private void addDataTitleCrew(Film currentFilm, String[] lineData){
         String[] directors;
         String[] writers;
@@ -332,8 +349,21 @@ public class FileProcessServiceImpl implements FileProcessService {
         }
     }
 
-    private void addDataTitlePrincipals(Film currentFilm, String[] lineData){
+    private Work createTitlePrincipals(String[] lineData){
+        Work actualWork = new Work();
+        actualWork.setFilmId(lineData[0]);
+        actualWork.setPersonId(lineData[2]);
+        actualWork.setCategory(lineData[3]);
 
+        if (!lineData[4].equals("\\N")) {
+            actualWork.setJob(lineData[4]);
+        }
+
+        if (!lineData[5].equals("\\N")) {
+            actualWork.setCharacters(lineData[5]);
+        }
+
+        return actualWork;
     }
 
     private void addDataTitleRatings(Film currentFilm, String[] lineData){
