@@ -6,6 +6,7 @@ import java.util.List;
 public class Film {
     private String id;
     private List<Title> titles = new ArrayList<>();
+    private List<Work> works = new ArrayList<>();
     private String type;
     private String primaryTitle;
     private String originalTitle;
@@ -30,7 +31,13 @@ public class Film {
         this.titles.addAll(titles);
     }
 
+    public void addWorks(List<Work> works){
+        this.works.addAll(works);
+    }
 
+    public List<Work> getWorks() {
+        return works;
+    }
 
     public void addGenre(String genre){
         genres.add(genre);
