@@ -5,12 +5,15 @@ import co.elastic.clients.elasticsearch.core.BulkRequest;
 import co.elastic.clients.elasticsearch.core.BulkResponse;
 import co.empathy.academy.search.config.ElasticSearchClientConfiguration;
 import co.empathy.academy.search.entities.Film;
+import co.empathy.academy.search.entities.Prueba;
 import co.empathy.academy.search.exceptions.BulkIndexException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Component
 public class SearchEngineImpl implements SearchEngine{
@@ -34,6 +37,28 @@ public class SearchEngineImpl implements SearchEngine{
                         .index("imdb_films")
                         .id(film.getId())
                         .document(film))));
+
+        BulkResponse result = elasticConfig.getCLient().bulk(bulkBuilder.build());
+
+        if (result.errors()) {
+            throw new BulkIndexException("Error indexing bulk");
+        }
+    }
+
+    public void testBulk() throws IOException {
+        BulkRequest.Builder bulkBuilder = new BulkRequest.Builder();
+        List<Prueba> pruebaList = new ArrayList<>();
+
+        pruebaList.add(new Prueba("E1"));
+        pruebaList.add(new Prueba("E2"));
+        pruebaList.add(new Prueba("E3"));
+
+        pruebaList.forEach(film ->
+                bulkBuilder.operations(op -> op
+                        .index(idx -> idx
+                                .index("imdb_films")
+                                .id(film.getE())
+                                .document(film))));
 
         BulkResponse result = elasticConfig.getCLient().bulk(bulkBuilder.build());
 

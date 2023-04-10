@@ -30,6 +30,8 @@ public class Film {
         this.titles.addAll(titles);
     }
 
+
+
     public void addGenre(String genre){
         genres.add(genre);
     }
@@ -90,5 +92,53 @@ public class Film {
                 ", averageRating=" + averageRating +
                 ", numberOfVotes=" + numberOfVotes +
                 '}';
+    }
+
+    public List<Title> getTitles() {
+        return titles;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getPrimaryTitle() {
+        return primaryTitle;
+    }
+
+    public String getOriginalTitle() {
+        return originalTitle;
+    }
+
+    public int getStartYear() {
+        return startYear;
+    }
+
+    public int getEndYear() {
+        return endYear;
+    }
+
+    public int getRuntimeMinutes() {
+        return runtimeMinutes;
+    }
+
+    public List<String> getGenres() {
+        return genres;
+    }
+
+    public List<String> getDirectorsIds() {
+        return directorsIds;
+    }
+
+    public List<String> getWritersIds() {
+        return writersIds;
+    }
+
+    public double getAverageRating() {
+        return averageRating;
+    }
+
+    public int getNumberOfVotes() {
+        return numberOfVotes;
     }
 }

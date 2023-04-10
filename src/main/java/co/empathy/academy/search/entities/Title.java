@@ -52,4 +52,32 @@ public class Title {
                 ", isOriginalTitle=" + isOriginalTitle +
                 '}';
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public List<String> getTypes() {
+        return types;
+    }
+
+    public List<String> getAttributes() {
+        return attributes;
+    }
+
+    public boolean isOriginalTitle() {
+        return isOriginalTitle;
+    }
 }

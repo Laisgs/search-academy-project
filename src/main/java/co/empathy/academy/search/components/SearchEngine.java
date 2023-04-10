@@ -11,4 +11,5 @@ import java.util.HashMap;
 public interface SearchEngine {
     String getClusterName();
     void bulkIndexFilms(Collection<Film> films) throws IOException;
+    void testBulk() throws IOException;
 }

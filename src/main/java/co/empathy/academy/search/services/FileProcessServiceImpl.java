@@ -5,6 +5,7 @@ import co.empathy.academy.search.entities.Episode;
 import co.empathy.academy.search.entities.Film;
 import co.empathy.academy.search.entities.Title;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,6 +18,14 @@ import java.util.List;
 
 @Service
 public class FileProcessServiceImpl implements FileProcessService {
+
+    public void test(){
+        try {
+            searchEngine.testBulk();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     private BufferedReader akasReader;
     private BufferedReader titleBasicsReader;
     private BufferedReader ratingsReader;
@@ -24,7 +33,7 @@ public class FileProcessServiceImpl implements FileProcessService {
     private BufferedReader episodeReader;
     private BufferedReader principalsReader;
 
-    private int bulkSize = 50;
+    private int bulkSize = 40000;
     private int markSize = 100000;
 
 
@@ -40,6 +49,7 @@ public class FileProcessServiceImpl implements FileProcessService {
     }
 
     @Override
+    @Async
     public void save(MultipartFile titleAkas, MultipartFile basics, MultipartFile ratings, MultipartFile crew, MultipartFile episodes, MultipartFile principals) throws IOException {
         titleBasicsReader = new BufferedReader(new InputStreamReader(basics.getInputStream()));
         akasReader = new BufferedReader(new InputStreamReader(titleAkas.getInputStream()));
@@ -53,7 +63,12 @@ public class FileProcessServiceImpl implements FileProcessService {
         crewReader.readLine();
         //episodeReader.readLine();
         //principalsReader.readLine();
+        long inicio = System.currentTimeMillis();
         readTitleBasics();
+        long fin = System.currentTimeMillis();
+        double tiempo = ((fin - inicio)/1000.0);
+
+        System.out.println(tiempo +" segundos");
     }
 
     private void readTitleBasics() throws IOException {
@@ -83,13 +98,13 @@ public class FileProcessServiceImpl implements FileProcessService {
                 readTitleRatings(films);
                 readTitleCrew(films);
 
-                    readTitleAkas(lastId).forEach((key, value) -> {
-                        try {
-                            films.get(key).addTitles(value);
-                        }catch (NullPointerException ex){
-                            System.out.println(key);
-                        }
-                    });
+                readTitleAkas(lastId).forEach((key, value) -> {
+                    try {
+                        films.get(key).addTitles(value);
+                    }catch (NullPointerException ex){
+                        //System.out.println(key);
+                    }
+                });
 
                 sendToElastic(films);
                 films.clear();
@@ -97,30 +112,34 @@ public class FileProcessServiceImpl implements FileProcessService {
                 linesReaded = 0;
             }
         }
+
+        System.out.println("FIN");
     }
 
     private void reset() throws IOException {
-        System.out.println("E");
         ratingsReader.reset();
         crewReader.reset();
-        akasReader.reset();
+        //akasReader.reset();
     }
 
     private HashMap<String, List<Title>> readTitleAkas(String lastId) throws IOException {
-        int linesReaded = 0;
         String line;
         String[] lineData;
         List<Title> titlesList;
         HashMap<String, List<Title>> titles = new HashMap<>();
-        boolean lasFilm = false;
 
+        boolean last = false;
 
         while ((line = akasReader.readLine()) != null){
             lineData = line.split("\t");
 
-            if(lastId.equals(lineData[0]))
-                lasFilm = true;
-            if(lasFilm && !(lastId.equals(lineData[0]))){
+
+            if (lastId.equals(lineData[0]))
+                last=true;
+            if(last && !(lastId.equals(lineData[0]))
+                    || Integer.parseInt(lastId.substring(2))
+                    <
+                    Integer.parseInt(lineData[0].substring(2))){
                 akasReader.mark(markSize);
                 return titles;
             }
@@ -133,8 +152,9 @@ public class FileProcessServiceImpl implements FileProcessService {
                 titlesList.add(creatTitleAkas(lineData));
                 titles.put(lineData[0], titlesList);
             }
-        }
 
+        }
+        akasReader.mark(markSize);
         return titles;
     }
 
@@ -166,6 +186,7 @@ public class FileProcessServiceImpl implements FileProcessService {
                 return;
             }
         }
+        crewReader.mark(markSize);
     }
 
     private void readTitleRatings(HashMap<String, Film> films) throws IOException {
@@ -193,6 +214,8 @@ public class FileProcessServiceImpl implements FileProcessService {
                 return;
             }
         }
+
+        ratingsReader.mark(markSize);
     }
 
     private void readTitleEpisode() throws IOException {
@@ -273,6 +296,7 @@ public class FileProcessServiceImpl implements FileProcessService {
     }
 
     private void addDataTitleBasics(Film currentFilm, String[] lineData){
+        currentFilm.setId(lineData[0]);
         currentFilm.setType(lineData[1]);
         currentFilm.setPrimaryTitle(lineData[2]);
         currentFilm.setOriginalTitle(lineData[3]);

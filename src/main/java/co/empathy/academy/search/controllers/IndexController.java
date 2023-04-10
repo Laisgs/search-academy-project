@@ -16,6 +16,11 @@ public class IndexController {
     @Autowired
     private FileProcessService fileProcessService;
 
+    @RequestMapping(value = "/test")
+    public void test(){
+        fileProcessService.test();
+    }
+
     @RequestMapping(value = "/index", method = RequestMethod.POST)
     public void uploadFiles(@RequestParam("akas") MultipartFile akas,
                             @RequestParam("titleBasics") MultipartFile titleBasics,
