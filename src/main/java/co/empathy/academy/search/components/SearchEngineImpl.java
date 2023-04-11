@@ -19,6 +19,7 @@ import java.util.List;
 public class SearchEngineImpl implements SearchEngine{
     @Autowired
     private ElasticSearchClientConfiguration elasticConfig;
+    private String indexName = "imdb_films";
 
     public String getClusterName(){
         try {
@@ -34,7 +35,7 @@ public class SearchEngineImpl implements SearchEngine{
         films.forEach(film ->
                 bulkBuilder.operations(op -> op
                 .index(idx -> idx
-                        .index("imdb_films")
+                        .index(indexName)
                         .id(film.getId())
                         .document(film))));
 
@@ -45,26 +46,15 @@ public class SearchEngineImpl implements SearchEngine{
         }
     }
 
-    public void testBulk() throws IOException {
-        BulkRequest.Builder bulkBuilder = new BulkRequest.Builder();
-        List<Prueba> pruebaList = new ArrayList<>();
+    @Override
+    public void createIndex() throws IOException {
+        try{
+            elasticConfig.getCLient().indices().delete(client -> client.index(indexName));
+        }catch (Exception ex){
 
-        pruebaList.add(new Prueba("E1"));
-        pruebaList.add(new Prueba("E2"));
-        pruebaList.add(new Prueba("E3"));
-
-        pruebaList.forEach(film ->
-                bulkBuilder.operations(op -> op
-                        .index(idx -> idx
-                                .index("imdb_films")
-                                .id(film.getE())
-                                .document(film))));
-
-        BulkResponse result = elasticConfig.getCLient().bulk(bulkBuilder.build());
-
-        if (result.errors()) {
-            throw new BulkIndexException("Error indexing bulk");
         }
+
+        elasticConfig.getCLient().indices().create(client -> client.index(indexName));
     }
 
     /*
