@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -55,27 +56,16 @@ public class SearchEngineImpl implements SearchEngine{
         }
 
         elasticConfig.getCLient().indices().create(client -> client.index(indexName));
+
+        configure();
     }
 
-    /*
-    public void bulkIndexActuFilms(Collection<Film> films) throws IOException {
-        BulkRequest.Builder bulkBuilder = new BulkRequest.Builder();
+    private void configure() throws IOException {
+        elasticConfig.getCLient().indices().close( closeClient -> closeClient.index(indexName));
 
-        films.forEach(film ->
-                bulkBuilder.operations(op -> op
-                        .update(idx -> idx
-                                .index("imdb_films")
-                                .id(film.getId())
-                                .document(film))));
+        InputStream analizer = getClass().getClassLoader().getResourceAsStream("myAnalyzer.json");
+        elasticConfig.getCLient().indices().putSettings(putSet -> putSet.index(indexName).withJson(analizer));
 
-        BulkResponse result = elasticConfig.getCLient().bulk(bulkBuilder.build());
-
-        System.out.println(result);
-
-        if (result.errors()) {
-            throw new BulkIndexException("Error indexing bulk");
-        }
+        elasticConfig.getCLient().indices().open(openClient -> openClient.index(indexName));
     }
-
-     */
 }

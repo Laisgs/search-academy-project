@@ -18,14 +18,6 @@ import java.util.List;
 
 @Service
 public class FileProcessServiceImpl implements FileProcessService {
-
-    public void test(){
-        try {
-            searchEngine.testBulk();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
     private BufferedReader akasReader;
     private BufferedReader titleBasicsReader;
     private BufferedReader ratingsReader;
@@ -63,6 +55,7 @@ public class FileProcessServiceImpl implements FileProcessService {
         crewReader.readLine();
         //episodeReader.readLine();
         //principalsReader.readLine();
+        searchEngine.createIndex();
         long inicio = System.currentTimeMillis();
         readTitleBasics();
         long fin = System.currentTimeMillis();
