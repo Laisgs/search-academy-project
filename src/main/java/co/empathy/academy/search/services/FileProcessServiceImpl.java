@@ -56,6 +56,7 @@ public class FileProcessServiceImpl implements FileProcessService {
         crewReader.readLine();
         //episodeReader.readLine();
         principalsReader.readLine();
+
         searchEngine.createIndex();
 
         long inicio = System.currentTimeMillis();
@@ -282,34 +283,6 @@ public class FileProcessServiceImpl implements FileProcessService {
             }
 
             lastId = lineData[0];
-        }
-    }
-
-    private void readTitlePrincipals(HashMap<String, Film> films) throws IOException {
-        int linesReaded = 0;
-        String line;
-        String[] lineData;
-        Film currentFilm;
-        String lastId = ".";
-
-        while ((line = principalsReader.readLine()) != null){
-            lineData = line.split("\t");
-
-            if (films.containsKey(lineData[0])) {
-                currentFilm = films.get(lineData[0]);
-                addDataTitlePrincipals(currentFilm, lineData);
-
-                if (!lineData[0].equals(lastId)){
-                    linesReaded++;
-                }
-
-                lastId = lineData[0];
-            }
-
-            if(linesReaded == bulkSize){
-                principalsReader.mark(markSize);
-                return;
-            }
         }
     }
 
