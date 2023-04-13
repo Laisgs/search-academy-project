@@ -1,0 +1,100 @@
+{
+  "properties": {
+    "id": {
+      "type": "keyword"
+    },
+    "titles": {
+      "type": "nested",
+      "properties": {
+        "id": {
+          "type": "keyword"
+        },
+        "title": {
+          "type": "text",
+          "analyzer": "myAnalyzer"
+        },
+        "region": {
+          "type": "text"
+        },
+        "language": {
+          "type": "keyword"
+        },
+        "types": {
+          "type": "keyword"
+        },
+        "attributes": {
+          "type": "keyword"
+        },
+        "isOriginalTitle": {
+          "type": "boolean"
+        }
+      }
+    },
+    "works": {
+      "type": "nested",
+      "properties": {
+        "filmId": {
+          "type": "keyword"
+        },
+        "personId": {
+          "type": "keyword"
+        },
+        "category": {
+          "type": "keyword"
+        },
+        "job": {
+          "type": "text"
+        },
+        "characters": {
+          "type": "text",
+          "analyzer": "myAnalyzer"
+        }
+      }
+    },
+    "type": {
+      "type": "keyword"
+    },
+    "primaryTitle": {
+      "type": "text",
+      "analyzer": "myAnalyzer"
+    },
+    "originalTitle": {
+      "type": "text",
+      "analyzer": "myAnalyzer"
+    },
+    "startYear": {
+      "type": "integer"
+    },
+    "endYear": {
+      "type": "integer"
+    },
+    "runtimeMinutes": {
+      "type": "integer"
+    },
+    "genres": {
+      "type": "keyword"
+    },
+    "directorsIds": {
+      "type": "nested",
+      "properties": {
+        "id": {
+          "type": "keyword"
+        }
+      }
+    },
+    "writersIds": {
+      "type": "nested",
+      "properties": {
+        "id": {
+          "type": "keyword"
+        }
+      }
+    },
+    "averageRating": {
+      "type": "float"
+    },
+    "numberOfVotes": {
+      "type": "integer"
+    }
+  }
+}
