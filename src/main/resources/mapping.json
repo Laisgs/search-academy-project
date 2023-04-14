@@ -11,7 +11,7 @@
         },
         "title": {
           "type": "text",
-          "analyzer": "myAnalyzer"
+          "analyzer": "imdb_analyzer"
         },
         "region": {
           "type": "text"
@@ -47,7 +47,7 @@
         },
         "characters": {
           "type": "text",
-          "analyzer": "myAnalyzer"
+          "analyzer": "imdb_analyzer"
         }
       }
     },
@@ -56,11 +56,11 @@
     },
     "primaryTitle": {
       "type": "text",
-      "analyzer": "myAnalyzer"
+      "analyzer": "imdb_analyzer"
     },
     "originalTitle": {
       "type": "text",
-      "analyzer": "myAnalyzer"
+      "analyzer": "imdb_analyzer"
     },
     "startYear": {
       "type": "integer"

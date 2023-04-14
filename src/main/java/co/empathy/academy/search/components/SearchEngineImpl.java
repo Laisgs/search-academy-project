@@ -67,5 +67,8 @@ public class SearchEngineImpl implements SearchEngine{
         elasticConfig.getCLient().indices().putSettings(putSet -> putSet.index(indexName).withJson(analizer));
 
         elasticConfig.getCLient().indices().open(openClient -> openClient.index(indexName));
+
+        InputStream mapping = getClass().getClassLoader().getResourceAsStream("mapping.json");
+        elasticConfig.getCLient().indices().putMapping( r -> r.index(indexName).withJson(mapping));
     }
 }
