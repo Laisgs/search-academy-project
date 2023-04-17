@@ -19,14 +19,6 @@ import java.util.List;
 
 @Service
 public class FileProcessServiceImpl implements FileProcessService {
-
-    public void test(){
-        try {
-            searchEngine.testBulk();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
     private BufferedReader akasReader;
     private BufferedReader titleBasicsReader;
     private BufferedReader ratingsReader;
@@ -64,6 +56,9 @@ public class FileProcessServiceImpl implements FileProcessService {
         crewReader.readLine();
         //episodeReader.readLine();
         principalsReader.readLine();
+
+        searchEngine.createIndex();
+
         long inicio = System.currentTimeMillis();
         readTitleBasics();
         long fin = System.currentTimeMillis();
@@ -121,6 +116,30 @@ public class FileProcessServiceImpl implements FileProcessService {
                 linesReaded = 0;
             }
         }
+
+        readTitleRatings(films);
+        readTitleCrew(films);
+
+        readTitleAkas(lastId).forEach((key, value) -> {
+            try {
+                films.get(key).addTitles(value);
+            }catch (NullPointerException ex){
+                //System.out.println(key);
+            }
+        });
+
+        readTitlePrincipals(lastId).forEach((key, value) -> {
+            try {
+                films.get(key).addWorks(value);
+            }catch (NullPointerException ex){
+                //System.out.println(key);
+            }
+        });
+
+        sendToElastic(films);
+        films.clear();
+        reset();
+        linesReaded = 0;
 
         System.out.println("FIN");
     }
