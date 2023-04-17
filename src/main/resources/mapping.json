@@ -75,20 +75,10 @@
       "type": "keyword"
     },
     "directorsIds": {
-      "type": "nested",
-      "properties": {
-        "id": {
-          "type": "keyword"
-        }
-      }
+      "type": "keyword"
     },
     "writersIds": {
-      "type": "nested",
-      "properties": {
-        "id": {
-          "type": "keyword"
-        }
-      }
+      "type": "keyword"
     },
     "averageRating": {
       "type": "float"

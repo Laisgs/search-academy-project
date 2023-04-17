@@ -117,6 +117,30 @@ public class FileProcessServiceImpl implements FileProcessService {
             }
         }
 
+        readTitleRatings(films);
+        readTitleCrew(films);
+
+        readTitleAkas(lastId).forEach((key, value) -> {
+            try {
+                films.get(key).addTitles(value);
+            }catch (NullPointerException ex){
+                //System.out.println(key);
+            }
+        });
+
+        readTitlePrincipals(lastId).forEach((key, value) -> {
+            try {
+                films.get(key).addWorks(value);
+            }catch (NullPointerException ex){
+                //System.out.println(key);
+            }
+        });
+
+        sendToElastic(films);
+        films.clear();
+        reset();
+        linesReaded = 0;
+
         System.out.println("FIN");
     }
 
