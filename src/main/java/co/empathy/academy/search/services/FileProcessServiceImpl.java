@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class FileProcessServiceImpl implements FileProcessService {
@@ -28,6 +29,8 @@ public class FileProcessServiceImpl implements FileProcessService {
 
     private int bulkSize = 40000;
     private int markSize = 100000;
+
+    private ConcurrentHashMap<String, String[]> rattings = new ConcurrentHashMap<>();
 
 
     @Autowired
@@ -60,11 +63,27 @@ public class FileProcessServiceImpl implements FileProcessService {
         searchEngine.createIndex();
 
         long inicio = System.currentTimeMillis();
+        readTitleRatings();
         readTitleBasics();
         long fin = System.currentTimeMillis();
         double tiempo = ((fin - inicio)/1000.0);
 
         System.out.println(tiempo +" segundos");
+    }
+
+    private void readTitleRatings() throws IOException {
+        int linesReaded = 0;
+        String line;
+        String[] lineData;
+        Film currentFilm;
+        String lastId = "tt00000";
+
+        while ((line = ratingsReader.readLine()) != null){
+            lineData = line.split("\t");
+
+            rattings.put(lineData[0], new String[]{lineData[1], lineData[2]});
+        }
+
     }
 
     private void readTitleBasics() throws IOException {
@@ -91,7 +110,7 @@ public class FileProcessServiceImpl implements FileProcessService {
             lastId = lineData[0];
 
             if(linesReaded >= bulkSize){
-                readTitleRatings(films);
+                //readTitleRatings(films);
                 readTitleCrew(films);
 
                 readTitleAkas(lastId).forEach((key, value) -> {
@@ -110,6 +129,13 @@ public class FileProcessServiceImpl implements FileProcessService {
                     }
                 });
 
+                films.forEach((k,v)->{
+                    if(rattings.containsKey(k)){
+                        v.setAverageRating(Double.parseDouble(rattings.get(k)[0]));
+                        v.setNumberOfVotes(Integer.parseInt(rattings.get(k)[1]));
+                    }
+                });
+
                 sendToElastic(films);
                 films.clear();
                 reset();
@@ -117,7 +143,6 @@ public class FileProcessServiceImpl implements FileProcessService {
             }
         }
 
-        readTitleRatings(films);
         readTitleCrew(films);
 
         readTitleAkas(lastId).forEach((key, value) -> {
@@ -145,9 +170,9 @@ public class FileProcessServiceImpl implements FileProcessService {
     }
 
     private void reset() throws IOException {
-        ratingsReader.reset();
+        //ratingsReader.reset();
         crewReader.reset();
-        //akasReader.reset();
+        akasReader.reset();
     }
 
     private HashMap<String, List<Title>> readTitleAkas(String lastId) throws IOException {
@@ -253,35 +278,6 @@ public class FileProcessServiceImpl implements FileProcessService {
         crewReader.mark(markSize);
     }
 
-    private void readTitleRatings(HashMap<String, Film> films) throws IOException {
-        int linesReaded = 0;
-        String line;
-        String[] lineData;
-        Film currentFilm;
-        String lastId = ".";
-
-        while ((line = ratingsReader.readLine()) != null){
-            lineData = line.split("\t");
-
-            if (films.containsKey(lineData[0])) {
-                currentFilm = films.get(lineData[0]);
-                addDataTitleRatings(currentFilm, lineData);
-
-                if (!lineData[0].equals(lastId)){
-                    linesReaded++;
-                }
-                lastId = lineData[0];
-            }
-
-            if(linesReaded == bulkSize){
-                ratingsReader.mark(markSize);
-                return;
-            }
-        }
-
-        ratingsReader.mark(markSize);
-    }
-
     private void readTitleEpisode() throws IOException {
         int linesReaded = 0;
         String line;
@@ -383,11 +379,6 @@ public class FileProcessServiceImpl implements FileProcessService {
         }
 
         return actualWork;
-    }
-
-    private void addDataTitleRatings(Film currentFilm, String[] lineData){
-        currentFilm.setAverageRating(Double.parseDouble(lineData[1]));
-        currentFilm.setNumberOfVotes(Integer.parseInt(lineData[2]));
     }
 
     private Title creatTitleAkas(String[] lineData) {
