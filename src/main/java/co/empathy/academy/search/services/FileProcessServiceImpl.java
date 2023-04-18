@@ -239,18 +239,21 @@ public class FileProcessServiceImpl implements FileProcessService {
         String line;
         String[] lineData;
         Film currentFilm;
-        String lastId = ".";
+        String lastId = "tt00000";
 
         while ((line = ratingsReader.readLine()) != null){
             lineData = line.split("\t");
 
-            if (films.containsKey(lineData[0])) {
+            if (films.containsKey(lineData[0]) &&
+                    Integer.parseInt(lastId.substring(2))
+                    <
+                    Integer.parseInt(lineData[0].substring(2))) {
                 currentFilm = films.get(lineData[0]);
                 addDataTitleRatings(currentFilm, lineData);
 
-                if (!lineData[0].equals(lastId)){
+
                     linesReaded++;
-                }
+
                 lastId = lineData[0];
             }
 
