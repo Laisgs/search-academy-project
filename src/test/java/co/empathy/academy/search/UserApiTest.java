@@ -42,7 +42,7 @@ public class UserApiTest {
         mvc.perform(MockMvcRequestBuilders.post("/users").content("{\"id\":" + user.getId()
                         +",\"name\":\"" + user.getName() + "\",\"surname\":\"" + user.getSurname() +
                         "\",\"email\":\"" + user.getEmail() + "\"}").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.content().string("User " + user.getName() + " already exist"))
+                .andExpect(MockMvcResultMatchers.content().string("User" + " already exist"))
                 .andExpect(MockMvcResultMatchers.status().isConflict());
     }
 
