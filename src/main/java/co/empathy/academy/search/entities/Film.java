@@ -13,9 +13,9 @@ public class Film {
     private int startYear;
     private int endYear;
     private int runtimeMinutes;
-    private List<String> genres = new ArrayList<>();;
-    private List<String> directorsIds = new ArrayList<>();;
-    private List<String> writersIds = new ArrayList<>();;
+    private List<String> genres = new ArrayList<>();
+    private List<String> directorsIds = new ArrayList<>();
+    private List<String> writersIds = new ArrayList<>();
     private double averageRating;
     private int numberOfVotes;
 
@@ -147,5 +147,25 @@ public class Film {
 
     public int getNumberOfVotes() {
         return numberOfVotes;
+    }
+
+    public ContractFilmEntity toContractEntity(){
+        ContractFilmEntity filmContract = new ContractFilmEntity();
+
+        filmContract.id = this.id;
+        filmContract.tconst = this.id;
+        filmContract.titleType = this.type;
+        filmContract.primaryTitle = this.primaryTitle;
+        filmContract.originalTitle = this.originalTitle;
+        filmContract.startYear = this.startYear;
+        filmContract.endYear = this.endYear;
+        filmContract.runtimeMinutes = this.runtimeMinutes;
+        filmContract.genres.addAll(this.genres);
+        filmContract.averageRating = this.averageRating;
+        filmContract.numVotes = this.numberOfVotes;
+        this.titles.forEach(t -> filmContract.akas.add(t.toAka()));
+
+
+        return filmContract;
     }
 }
