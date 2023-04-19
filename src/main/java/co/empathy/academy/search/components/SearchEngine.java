@@ -1,5 +1,6 @@
 package co.empathy.academy.search.components;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.json.JsonData;
 import co.empathy.academy.search.entities.Film;
 import org.springframework.stereotype.Component;
@@ -16,4 +17,6 @@ public interface SearchEngine {
     void createIndex() throws IOException;
 
     public List<Film> searchFilms(String title, double minRating) throws IOException;
+
+    List<Film> performFilteredQuery(List<Query> filters) throws IOException;
 }

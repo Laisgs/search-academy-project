@@ -1,7 +1,9 @@
 package co.empathy.academy.search.components;
 
 import co.elastic.clients.elasticsearch._types.FieldSort;
+import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
@@ -21,6 +23,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class SearchEngineImpl implements SearchEngine{
@@ -96,13 +99,22 @@ public class SearchEngineImpl implements SearchEngine{
                                 .field("numberOfVotes")
                                 .order(SortOrder.Desc)))),
                 Film.class);
-        List<Film> films = new ArrayList<>();
-        List<Hit<Film>> hits = response.hits().hits();
+        return getFilms(response);
+    }
 
-        for (Hit<Film> hit: hits){
-            films.add(hit.source());
-        }
+    public List<Film> performFilteredQuery(List<Query> filters) throws IOException {
+        Query query = BoolQuery.of(q->q.must(filters))._toQuery();
+        SortOptions sort = new SortOptions.Builder()
+                .field(f->f.field("numberOfVotes").order(SortOrder.Desc)).build();
+        SearchResponse<Film> response = elasticConfig.getCLient().search(s->s
+                .index(indexName)
+                        .query(query)
+                        .sort(sort)
+                , Film.class);
+        return getFilms(response);
+    }
 
-        return films;
+    private List<Film> getFilms(SearchResponse<Film> response){
+        return response.hits().hits().stream().map(Hit::source).toList();
     }
 }

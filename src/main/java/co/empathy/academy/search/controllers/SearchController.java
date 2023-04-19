@@ -9,14 +9,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
+@RequestMapping("/search")
 public class SearchController {
 
     @Autowired
     private SearchService searchService;
-    @GetMapping("/search")
+    @GetMapping
     public ResponseEntity<ContractEntity> search(@RequestParam String query){
-        return new ResponseEntity<>(searchService.search(query), HttpStatus.OK);
+        return new ResponseEntity<>(searchService.search(query, 5.0), HttpStatus.OK);
+    }
+
+    @GetMapping("/filters")
+    public ResponseEntity<ContractEntity> searchFilter(@RequestParam("genres") Optional<String> genres,
+                                                       @RequestParam("type") Optional<String> type,
+                                                       @RequestParam("maxYear") Optional<Integer> maxYear,
+                                                       @RequestParam("minYear") Optional<Integer> minYear,
+                                                       @RequestParam("maxMinutes") Optional<Integer> maxMinutes,
+                                                       @RequestParam("minMinutes") Optional<Integer> minMinutes){
+        return new ResponseEntity<>(searchService.filteredSearch(genres, type, maxYear, minYear
+                , maxMinutes, minMinutes), HttpStatus.OK);
     }
 }
