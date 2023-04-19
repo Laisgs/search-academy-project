@@ -2,6 +2,7 @@ package co.empathy.academy.search.services;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.empathy.academy.search.components.SearchEngine;
+import co.empathy.academy.search.entities.ContractEntity;
 import co.empathy.academy.search.entities.Film;
 import org.elasticsearch.action.search.SearchRequest;
 
@@ -18,9 +19,13 @@ public class SearchServiceImpl implements SearchService{
     @Autowired
     private SearchEngine searchEngine;
     @Override
-    public List<Film> search(String query) {
+    public ContractEntity search(String query) {
+        List<Film> films;
+        ContractEntity result = new ContractEntity();
         try {
-            return searchEngine.searchFilms(query,5.0);
+            films = searchEngine.searchFilms(query,5.0);
+            films.forEach(f->result.hits.add(f.toContractEntity()));
+            return result;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
