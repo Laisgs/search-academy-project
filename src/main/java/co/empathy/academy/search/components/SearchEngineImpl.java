@@ -1,11 +1,17 @@
 package co.empathy.academy.search.components;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.FieldSort;
+import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
 import co.elastic.clients.elasticsearch.core.BulkRequest;
 import co.elastic.clients.elasticsearch.core.BulkResponse;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.json.JsonData;
 import co.empathy.academy.search.config.ElasticSearchClientConfiguration;
 import co.empathy.academy.search.entities.Film;
-import co.empathy.academy.search.entities.Prueba;
 import co.empathy.academy.search.exceptions.BulkIndexException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -70,5 +76,33 @@ public class SearchEngineImpl implements SearchEngine{
 
         InputStream mapping = getClass().getClassLoader().getResourceAsStream("mapping.json");
         elasticConfig.getCLient().indices().putMapping( r -> r.index(indexName).withJson(mapping));
+    }
+
+    public List<Film> searchFilms(String title, double minRating) throws IOException {
+
+        Query byTitle = MatchQuery.of(r->r
+                .field("primaryTitle")
+                .query(title))._toQuery();
+        Query byRating = RangeQuery.of(r->r
+                .field("averageRating").gt(JsonData.of(minRating)))._toQuery();
+
+        SearchResponse<Film> response = elasticConfig.getCLient().search(s->s
+                .index(indexName)
+                .query(q->q
+                        .bool(b->b
+                                .must(byTitle)
+                                .must(byRating))
+                ).sort(so->so.field(FieldSort.of(f->f
+                                .field("numberOfVotes")
+                                .order(SortOrder.Desc)))),
+                Film.class);
+        List<Film> films = new ArrayList<>();
+        List<Hit<Film>> hits = response.hits().hits();
+
+        for (Hit<Film> hit: hits){
+            films.add(hit.source());
+        }
+
+        return films;
     }
 }

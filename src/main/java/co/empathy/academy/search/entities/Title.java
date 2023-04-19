@@ -10,7 +10,7 @@ public class Title {
     private String language;
     private List<String> types = new ArrayList<>();
     private List<String> attributes = new ArrayList<>();
-    private boolean isOriginalTitle;
+    private boolean originalTitle;
 
     public void addType(String type){
         types.add(type);
@@ -37,7 +37,7 @@ public class Title {
     }
 
     public void setIsOriginalTitle() {
-        isOriginalTitle = true;
+        originalTitle = true;
     }
 
     @Override
@@ -49,7 +49,7 @@ public class Title {
                 ", language='" + language + '\'' +
                 ", types=" + types +
                 ", attributes=" + attributes +
-                ", isOriginalTitle=" + isOriginalTitle +
+                ", isOriginalTitle=" + originalTitle +
                 '}';
     }
 
@@ -78,6 +78,16 @@ public class Title {
     }
 
     public boolean isOriginalTitle() {
-        return isOriginalTitle;
+        return originalTitle;
+    }
+
+    public Aka toAka(){
+        Aka aka = new Aka();
+        aka.title = this.title;
+        aka.region = this.region;
+        aka.language = this.language;
+        aka.isOriginalTitle = this.originalTitle;
+
+        return aka;
     }
 }
