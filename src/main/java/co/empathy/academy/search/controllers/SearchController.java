@@ -13,6 +13,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/search")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class SearchController {
 
     @Autowired
