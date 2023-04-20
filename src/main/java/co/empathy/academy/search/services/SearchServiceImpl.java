@@ -67,7 +67,7 @@ public class SearchServiceImpl implements SearchService{
 
         if (types.isPresent()) {
             String[] typesArray = types.get().split(",");
-            List<Query> typeQueries = terms(typesArray, "titleType");
+            List<Query> typeQueries = terms(typesArray, "type");
             filters.add(should(typeQueries));
         }
 
