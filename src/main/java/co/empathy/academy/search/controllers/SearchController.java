@@ -23,6 +23,11 @@ public class SearchController {
         return new ResponseEntity<>(searchService.search(query, 5.0), HttpStatus.OK);
     }
 
+    @GetMapping("/trendings")
+    public ResponseEntity<ContractEntity> trendings(){
+        return new ResponseEntity<>(searchService.trendings(), HttpStatus.OK);
+    }
+
     @GetMapping("/filters")
     public ResponseEntity<ContractEntity> searchFilter(@RequestParam("genres") Optional<String> genres,
                                                        @RequestParam("type") Optional<String> type,

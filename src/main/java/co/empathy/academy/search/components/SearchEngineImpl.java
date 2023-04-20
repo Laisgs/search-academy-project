@@ -104,14 +104,25 @@ public class SearchEngineImpl implements SearchEngine{
 
     public List<Film> performFilteredQuery(List<Query> filters) throws IOException {
         Query query = BoolQuery.of(q->q.must(filters))._toQuery();
-        SortOptions sort = new SortOptions.Builder()
-                .field(f->f.field("numberOfVotes").order(SortOrder.Desc)).build();
+
         SearchResponse<Film> response = elasticConfig.getCLient().search(s->s
                 .index(indexName)
                         .query(query)
-                        .sort(sort)
+                        .sort(getSortOptions())
                 , Film.class);
         return getFilms(response);
+    }
+
+    private List<SortOptions> getSortOptions(){
+        SortOptions sortVotes = new SortOptions.Builder()
+                .field(f->f.field("numberOfVotes").order(SortOrder.Desc)).build();
+        SortOptions sortRating = new SortOptions.Builder()
+                .field(f->f.field("averageRating").order(SortOrder.Desc)).build();
+        List<SortOptions> sort = new ArrayList<>();
+        sort.add(sortVotes);
+        sort.add(sortRating);
+
+        return sort;
     }
 
     private List<Film> getFilms(SearchResponse<Film> response){

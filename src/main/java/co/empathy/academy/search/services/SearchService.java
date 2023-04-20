@@ -12,4 +12,5 @@ public interface SearchService {
     ContractEntity filteredSearch(Optional<String> genres, Optional<String> types,
                                   Optional<Integer> maxYear, Optional<Integer> minYear,
                                   Optional<Integer> maxRuntime, Optional<Integer> minRuntime);
+    ContractEntity trendings();
 }

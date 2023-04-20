@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class SearchServiceImpl implements SearchService{
+    //Esta clase asume más responsabilidades de las que creo que debería
+    //Preferiría tener la creación de las queries en un componente a parte pero no me dió tiempo.
     @Autowired
     private SearchEngine searchEngine;
     @Override
@@ -37,6 +39,28 @@ public class SearchServiceImpl implements SearchService{
         }
     }
 
+    public ContractEntity trendings(){
+        List<Film> films;
+        ContractEntity result = new ContractEntity();
+
+
+        try {
+            films = searchEngine.performFilteredQuery(createTrendingsFilters());
+            films.forEach(f->result.hits.add(f.toContractEntity()));
+            return result;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<Query> createTrendingsFilters(){
+        List<Query> filters = new ArrayList<>();
+
+        filters.add(rangeInt("startYear", 2022, Integer.MAX_VALUE));
+        return filters;
+    }
+
+    @Override
     public ContractEntity filteredSearch(Optional<String> genres, Optional<String> types,
                                          Optional<Integer> maxYear, Optional<Integer> minYear,
                                          Optional<Integer> maxRuntime, Optional<Integer> minRuntime) {
@@ -62,7 +86,7 @@ public class SearchServiceImpl implements SearchService{
         if (genres.isPresent()) {
             String[] genresArray = genres.get().split(",");
             List<Query> genreQueries = terms(genresArray, "genres");
-            filters.add(should(genreQueries));
+            filters.add(must(genreQueries));
         }
 
         if (types.isPresent()) {
@@ -86,6 +110,10 @@ public class SearchServiceImpl implements SearchService{
 
     private Query should(List<Query> queries){
         return BoolQuery.of(b->b.should(queries))._toQuery();
+    }
+
+    private Query must(List<Query> queries){
+        return BoolQuery.of(b->b.must(queries))._toQuery();
     }
 
     private Query term(String value, String field) {
