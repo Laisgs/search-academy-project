@@ -39,6 +39,7 @@ public class SearchServiceImpl implements SearchService{
         }
     }
 
+    @Override
     public ContractEntity trendings(){
         List<Film> films;
         ContractEntity result = new ContractEntity();
@@ -63,14 +64,15 @@ public class SearchServiceImpl implements SearchService{
     @Override
     public ContractEntity filteredSearch(Optional<String> genres, Optional<String> types,
                                          Optional<Integer> maxYear, Optional<Integer> minYear,
-                                         Optional<Integer> maxRuntime, Optional<Integer> minRuntime) {
+                                         Optional<Integer> maxRuntime, Optional<Integer> minRuntime
+            , Optional<String> title) {
         List<Film> films;
         ContractEntity result = new ContractEntity();
 
 
         try {
             films = searchEngine.performFilteredQuery(createFilters(genres, types, maxYear
-                    , minYear, maxRuntime, minRuntime));
+                    , minYear, maxRuntime, minRuntime,title));
             films.forEach(f->result.hits.add(f.toContractEntity()));
             return result;
         } catch (IOException e) {
@@ -80,8 +82,15 @@ public class SearchServiceImpl implements SearchService{
 
     private List<Query> createFilters(Optional<String> genres, Optional<String> types,
                                       Optional<Integer> maxYear, Optional<Integer> minYear,
-                                      Optional<Integer> maxRuntime, Optional<Integer> minRuntime){
+                                      Optional<Integer> maxRuntime, Optional<Integer> minRuntime, Optional<String> title){
         List<Query> filters = new ArrayList<>();
+
+        if(title.isPresent()){
+            Query byTitle = MatchQuery.of(r->r
+                    .field("primaryTitle")
+                    .query(title.get()))._toQuery();
+            filters.add(byTitle);
+        }
 
         if (genres.isPresent()) {
             String[] genresArray = genres.get().split(",");
