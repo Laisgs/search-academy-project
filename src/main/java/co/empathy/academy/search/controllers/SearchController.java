@@ -34,8 +34,9 @@ public class SearchController {
                                                        @RequestParam("maxYear") Optional<Integer> maxYear,
                                                        @RequestParam("minYear") Optional<Integer> minYear,
                                                        @RequestParam("maxMinutes") Optional<Integer> maxMinutes,
-                                                       @RequestParam("minMinutes") Optional<Integer> minMinutes){
+                                                       @RequestParam("minMinutes") Optional<Integer> minMinutes,
+                                                       @RequestParam("title") Optional<String> title){
         return new ResponseEntity<>(searchService.filteredSearch(genres, type, maxYear, minYear
-                , maxMinutes, minMinutes), HttpStatus.OK);
+                , maxMinutes, minMinutes, title), HttpStatus.OK);
     }
 }
