@@ -62,7 +62,7 @@ public class SearchServiceImpl implements SearchService{
     }
 
     /**
-     * 
+     *
      * @param genres
      * @param types
      * @param maxYear
