@@ -1,15 +1,11 @@
 package co.empathy.academy.search.services;
 
-import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.json.JsonData;
 import co.empathy.academy.search.components.SearchEngine;
 import co.empathy.academy.search.entities.ContractEntity;
 import co.empathy.academy.search.entities.Film;
-import org.elasticsearch.action.search.SearchRequest;
 
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +35,10 @@ public class SearchServiceImpl implements SearchService{
         }
     }
 
+    /**
+     * Take films form 2022 and above ordered by rating and number of votes
+     * @return ContractEntity with the list of trendings films
+     */
     @Override
     public ContractEntity trendings(){
         List<Film> films;
@@ -61,6 +61,17 @@ public class SearchServiceImpl implements SearchService{
         return filters;
     }
 
+    /**
+     * 
+     * @param genres
+     * @param types
+     * @param maxYear
+     * @param minYear
+     * @param maxRuntime
+     * @param minRuntime
+     * @param title
+     * @return
+     */
     @Override
     public ContractEntity filteredSearch(Optional<String> genres, Optional<String> types,
                                          Optional<Integer> maxYear, Optional<Integer> minYear,
