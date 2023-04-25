@@ -35,10 +35,6 @@ public class SearchServiceImpl implements SearchService{
         }
     }
 
-    /**
-     * Take films form 2022 and above ordered by rating and number of votes
-     * @return ContractEntity with the list of trendings films
-     */
     @Override
     public ContractEntity trendings(){
         List<Film> films;
@@ -61,17 +57,6 @@ public class SearchServiceImpl implements SearchService{
         return filters;
     }
 
-    /**
-     *
-     * @param genres
-     * @param types
-     * @param maxYear
-     * @param minYear
-     * @param maxRuntime
-     * @param minRuntime
-     * @param title
-     * @return
-     */
     @Override
     public ContractEntity filteredSearch(Optional<String> genres, Optional<String> types,
                                          Optional<Integer> maxYear, Optional<Integer> minYear,
