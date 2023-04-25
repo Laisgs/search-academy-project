@@ -24,12 +24,18 @@ public class FileProcessServiceImpl implements FileProcessService {
     private BufferedReader titleBasicsReader;
     private BufferedReader ratingsReader;
     private BufferedReader crewReader;
-    private BufferedReader episodeReader;
     private BufferedReader principalsReader;
 
+    /*
+    number of documents of a batch
+     */
     private int bulkSize = 40000;
+
     private int markSize = 100000;
 
+    /*
+    Map that store rattings for rattings
+     */
     private ConcurrentHashMap<String, String[]> rattings = new ConcurrentHashMap<>();
 
 
@@ -51,19 +57,20 @@ public class FileProcessServiceImpl implements FileProcessService {
         akasReader = new BufferedReader(new InputStreamReader(titleAkas.getInputStream()));
         ratingsReader = new BufferedReader(new InputStreamReader(ratings.getInputStream()));
         crewReader = new BufferedReader(new InputStreamReader(crew.getInputStream()));
-        //episodeReader = new BufferedReader(new InputStreamReader(episodes.getInputStream()));
         principalsReader = new BufferedReader(new InputStreamReader(principals.getInputStream()));
+
         titleBasicsReader.readLine();
         akasReader.readLine();
         ratingsReader.readLine();
         crewReader.readLine();
-        //episodeReader.readLine();
         principalsReader.readLine();
 
         searchEngine.createIndex();
 
         long inicio = System.currentTimeMillis();
+        //Read all ratings
         readTitleRatings();
+        //Read teh rest of the data in batches
         readTitleBasics();
         long fin = System.currentTimeMillis();
         double tiempo = ((fin - inicio)/1000.0);
@@ -72,18 +79,14 @@ public class FileProcessServiceImpl implements FileProcessService {
     }
 
     private void readTitleRatings() throws IOException {
-        int linesReaded = 0;
         String line;
         String[] lineData;
-        Film currentFilm;
-        String lastId = "tt00000";
 
         while ((line = ratingsReader.readLine()) != null){
             lineData = line.split("\t");
 
             rattings.put(lineData[0], new String[]{lineData[1], lineData[2]});
         }
-
     }
 
     private void readTitleBasics() throws IOException {
@@ -110,14 +113,13 @@ public class FileProcessServiceImpl implements FileProcessService {
             lastId = lineData[0];
 
             if(linesReaded >= bulkSize){
-                //readTitleRatings(films);
                 readTitleCrew(films);
 
                 readTitleAkas(lastId).forEach((key, value) -> {
                     try {
                         films.get(key).addTitles(value);
                     }catch (NullPointerException ex){
-                        //System.out.println(key);
+                        //If films doesn't exist ignore akas
                     }
                 });
 
@@ -125,10 +127,11 @@ public class FileProcessServiceImpl implements FileProcessService {
                     try {
                         films.get(key).addWorks(value);
                     }catch (NullPointerException ex){
-                        //System.out.println(key);
+                        //Ignore
                     }
                 });
 
+                //Get rating for this batch from ratting hashmap
                 films.forEach((k,v)->{
                     if(rattings.containsKey(k)){
                         v.setAverageRating(Double.parseDouble(rattings.get(k)[0]));
@@ -149,7 +152,6 @@ public class FileProcessServiceImpl implements FileProcessService {
             try {
                 films.get(key).addTitles(value);
             }catch (NullPointerException ex){
-                //System.out.println(key);
             }
         });
 
@@ -157,7 +159,6 @@ public class FileProcessServiceImpl implements FileProcessService {
             try {
                 films.get(key).addWorks(value);
             }catch (NullPointerException ex){
-                //System.out.println(key);
             }
         });
 
@@ -278,34 +279,6 @@ public class FileProcessServiceImpl implements FileProcessService {
         crewReader.mark(markSize);
     }
 
-    private void readTitleEpisode() throws IOException {
-        int linesReaded = 0;
-        String line;
-        String[] lineData;
-        Episode currentEpisode;
-        String lastId = ".";
-        HashMap<String, Episode> episodes = new HashMap<>();
-
-        while ((line = episodeReader.readLine()) != null){
-            lineData = line.split("\t");
-
-            if (episodes.containsKey(lineData[0])) {
-                currentEpisode = episodes.get(lineData[0]);
-                addDataTitleEpisode(currentEpisode, lineData);
-            } else {
-                currentEpisode = new Episode();
-                addDataTitleEpisode(currentEpisode, lineData);
-                episodes.put(lineData[0], currentEpisode);
-            }
-
-            if (!lineData[0].equals(lastId)){
-                linesReaded++;
-            }
-
-            lastId = lineData[0];
-        }
-    }
-
     private void addDataTitleCrew(Film currentFilm, String[] lineData){
         String[] directors;
         String[] writers;
@@ -349,18 +322,6 @@ public class FileProcessServiceImpl implements FileProcessService {
 
         for (int i=0; i<lineData.length; i++){
             currentFilm.addGenre(lineData[i]);
-        }
-    }
-
-    private void addDataTitleEpisode(Episode currentEpisode, String[] lineData){
-        currentEpisode.setId(lineData[0]);
-        currentEpisode.setParentId(lineData[1]);
-
-        if (!lineData[2].equals("\\N")) {
-            currentEpisode.setSeasonNumber(Integer.parseInt(lineData[2]));
-        }
-        if (!lineData[3].equals("\\N")) {
-            currentEpisode.setEpisodeNumber(Integer.parseInt(lineData[3]));
         }
     }
 
