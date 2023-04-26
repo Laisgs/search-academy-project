@@ -28,7 +28,7 @@ public class IndexController {
     @Parameter(name = "principals", description = "Principals file containing the principals to be indexed", required = true)
     @Parameter(name = "episodes", description = "Episodes file containing the episodes to be indexed", required = true)
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data accepted for indexing"),
+            @ApiResponse(responseCode = "200", description = "Data accepted for indexing")
     })
     @RequestMapping(value = "/index", method = RequestMethod.POST)
     public void uploadFiles(@RequestParam("akas") MultipartFile akas,

@@ -26,7 +26,7 @@ public class SearchController {
     @Operation(summary = "Get films by title")
     @Parameter(name = "title", description = "Title of the film")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of movies found, it can be empty"),
+            @ApiResponse(responseCode = "200", description = "List of movies found, it can be empty")
     })
     @GetMapping
     public ResponseEntity<ContractEntity> search(@RequestParam String query){
@@ -35,7 +35,7 @@ public class SearchController {
 
     @Operation(summary = "Get trending films")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of movies found, it can be empty"),
+            @ApiResponse(responseCode = "200", description = "List of movies found, it can be empty")
     })
     @GetMapping("/trendings")
     public ResponseEntity<ContractEntity> trendings(){
@@ -51,7 +51,7 @@ public class SearchController {
     @Parameter(name = "minMinutes", description = "Minimum runtime minutes of the film")
     @Parameter(name = "title", description = "Title of the film")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of movies found, it can be empty"),
+            @ApiResponse(responseCode = "200", description = "List of movies found, it can be empty")
     })
     @GetMapping("/filters")
     public ResponseEntity<ContractEntity> searchFilter(@RequestParam("genres") Optional<String> genres,
